@@ -36,6 +36,31 @@ Place all metadata tags at the very bottom of the commit message.
 
 *TODO: It is recommended to use Git hooks (e.g., via `husky` and `commitlint`) to enforce these rules automatically before pushing.*
 
+### 2.4 AI Assistance
+
+When AI tools are used during development, including an `Assisted-by` tag is optional, but if you choose to include it, please use the following format:
+
+```text
+Assisted-by: AGENT_NAME:MODEL_VERSION [TOOL1] [TOOL2]
+```
+
+Where:
+
+* **AGENT_NAME**: The name of the AI tool or framework (e.g., `Antigravity`, `Copilot`, `ChatGPT`).
+* **MODEL_VERSION**: The specific model model/version used (e.g., `Gemini-3.1-Pro`, `GPT-4o`).
+* **[TOOL1] [TOOL2]**: Optional specialized analysis tools or linters used by the AI or developer (e.g., `eslint`, `prettier`, `typescript`, `clang-tidy`).
+
+**Placement Rules:**
+
+* The `Assisted-by` tag should be placed in the footer of the commit message, along with other metadata tags.
+* It must appear above the mandatory `Signed-off-by` tag.
+
+**Example:**
+
+```text
+Assisted-by: Antigravity:Gemini-3.1-Pro [eslint]
+```
+
 ---
 
 ## 3. Reference Examples
@@ -53,6 +78,20 @@ main UI thread to prevent rendering stutters.
 Signed-off-by: Your Name <dev@stocksflow.com>
 ```
 
+**Example: AI-Assisted Feature Addition**
+
+```text
+SF-42 components: add global stock ticker banner
+
+The home page previously lacked real-time market overviews.
+This change introduces a scrolling ticker banner component that
+polls the market API and handles timezone conversions off the
+main UI thread to prevent rendering stutters.
+
+Assisted-by: Antigravity:Gemini-3.1-Pro [eslint]
+Signed-off-by: Your Name <dev@stocksflow.com>
+```
+
 **Example: Bug Fix with References**
 
 ```text
@@ -67,3 +106,13 @@ Fixes: a2b3c4d5e6 ("SF-39 pages: redesign home page layout")
 StocksFlow-issue: https://github.com/org/StocksFlow/issues/88
 Signed-off-by: Your Name <dev@stocksflow.com>
 ```
+
+---
+
+## 4. References
+
+This document adapts conventions from Linux and Lustre. For more detailed information, please refer to the Linux kernel documentation:
+
+* [submitting-patches.rst](https://github.com/torvalds/linux/blob/master/Documentation/process/submitting-patches.rst)
+* [coding-assistants.rst](https://github.com/torvalds/linux/blob/master/Documentation/process/coding-assistants.rst)
+* [coding-style.rst](https://github.com/torvalds/linux/blob/master/Documentation/process/coding-style.rst)
