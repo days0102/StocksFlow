@@ -2,6 +2,7 @@
 .idea/
 
 node_modules/
+miniprogram/miniprogram_npm/
 dist/
 
 project.private.config.json

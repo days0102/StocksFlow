@@ -1,5 +1,5 @@
 // index.ts
-// 获取应用实例
+// Get an example of the application
 const app = getApp<IAppOption>()
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 
@@ -15,7 +15,7 @@ Component({
     canIUseNicknameComp: wx.canIUse('input.type.nickname'),
   },
   methods: {
-    // 事件处理函数
+    // Event handling functions
     bindViewTap() {
       wx.navigateTo({
         url: '../logs/logs',
@@ -38,9 +38,13 @@ Component({
       })
     },
     getUserProfile() {
-      // 推荐使用wx.getUserProfile获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认，开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
+      // It is recommended to use wx.getUserProfile to obtain user information,
+      // and the developer needs to confirm the user's personal information every
+      // time the user obtains the user's personal information through this interface
       wx.getUserProfile({
-        desc: '展示用户信息', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
+        // Please fill in the information carefully as the purpose of obtaining
+        // the user's personal information will be displayed in the pop-up window later
+        desc: '展示用户信息',
         success: (res) => {
           console.log(res)
           this.setData({
