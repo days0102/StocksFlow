@@ -6,3 +6,6 @@ miniprogram/miniprogram_npm/
 dist/
 
 project.private.config.json
+
+# Temporary files saved by commit-msg hook on validation failure
+COMMIT_EDITMSG.*

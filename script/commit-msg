@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# commit-msg hook: enforce StocksFlow commit message conventions
+# Based on: docs/commit_convention.md
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# --- Color codes for terminal output ---
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+error() { echo -e "${RED}[commit-msg] ERROR: $1${NC}" >&2; }
+warn()  { echo -e "${YELLOW}[commit-msg] WARN:  $1${NC}" >&2; }
+ok()    { echo -e "${GREEN}[commit-msg] OK:    $1${NC}" >&2; }
+
+ERRORS=0
+
+# ---------------------------------------------------------------------------
+# Strip comment lines (lines starting with #) before validation
+# ---------------------------------------------------------------------------
+CLEANED_MSG=$(grep -v '^#' "$COMMIT_MSG_FILE")
+
+# ---------------------------------------------------------------------------
+# Extract structural parts
+# ---------------------------------------------------------------------------
+SUMMARY_LINE=$(echo "$CLEANED_MSG" | sed '/^[[:space:]]*$/d' | head -n 1)
+REST=$(echo "$CLEANED_MSG" | tail -n +2)
+
+# ---------------------------------------------------------------------------
+# Rule 1: Summary line must not exceed 62 characters (section 2.1)
+# ---------------------------------------------------------------------------
+SUMMARY_LEN=${#SUMMARY_LINE}
+if [ "$SUMMARY_LEN" -gt 62 ]; then
+    error "Summary line is ${SUMMARY_LEN} chars (max 62): \"${SUMMARY_LINE}\""
+    ERRORS=$((ERRORS + 1))
+fi
+
+# ---------------------------------------------------------------------------
+# Rule 2: Summary line format — "<ISSUE> <component>: <description>"
+#   - Issue: SF-NNN or #NNN
+#   - Component: single lowercase word from the allowed list (section 2.1)
+#   - Description: non-empty
+# ---------------------------------------------------------------------------
+ALLOWED_COMPONENTS="pages|components|utils|api|cloud|styles|store|config|docs|all|script|tests"
+SUMMARY_REGEX="^(SF-[0-9]+|#[0-9]+) ($ALLOWED_COMPONENTS): .+"
+
+if ! echo "$SUMMARY_LINE" | grep -Eq "$SUMMARY_REGEX"; then
+    error "Summary line does not match required format."
+    error "  Expected : <SF-NNN|#NNN> <component>: <description>"
+    error "  Components: pages, components, utils, api, cloud, styles, store, config, docs"
+    error "  Got       : \"${SUMMARY_LINE}\""
+    ERRORS=$((ERRORS + 1))
+fi
+
+# ---------------------------------------------------------------------------
+# Rule 3: Blank line required after summary (section 2.2)
+# ---------------------------------------------------------------------------
+SECOND_LINE=$(echo "$CLEANED_MSG" | sed -n '2p')
+BODY_LINES=$(echo "$CLEANED_MSG" | tail -n +2 | sed '/^[[:space:]]*$/d')
+
+if [ -n "$BODY_LINES" ] && [ -n "$SECOND_LINE" ]; then
+    error "Missing blank line between summary and body (section 2.2)."
+    ERRORS=$((ERRORS + 1))
+fi
+
+# ---------------------------------------------------------------------------
+# Rule 4: Body lines must not exceed 70 columns (section 2.2)
+#         Skip metadata tag lines (e.g. "Signed-off-by:", "Fixes:", etc.)
+# ---------------------------------------------------------------------------
+TAG_PATTERN="^(Signed-off-by|Fixes|Tested-by|Reviewed-by|StocksFlow-issue|Assisted-by):"
+
+LINE_NUM=0
+while IFS= read -r line; do
+    LINE_NUM=$((LINE_NUM + 1))
+    [ "$LINE_NUM" -le 2 ] && continue  # skip summary + blank line
+    echo "$line" | grep -Eq "$TAG_PATTERN" && continue
+    LINE_LEN=${#line}
+    if [ "$LINE_LEN" -gt 70 ]; then
+        error "Body line ${LINE_NUM} exceeds 70 columns (${LINE_LEN}): \"${line}\""
+        ERRORS=$((ERRORS + 1))
+    fi
+done < <(echo "$CLEANED_MSG")
+
+# ---------------------------------------------------------------------------
+# Rule 5: Signed-off-by is required and must be the LAST non-empty line
+#         (section 2.3)
+# ---------------------------------------------------------------------------
+LAST_NONEMPTY=$(echo "$CLEANED_MSG" | sed '/^[[:space:]]*$/d' | tail -n 1)
+
+if ! echo "$LAST_NONEMPTY" | grep -Eq "^Signed-off-by: .+ <.+@.+>"; then
+    error "Last line must be a valid 'Signed-off-by: Name <email>' tag (section 2.3)."
+    error "  Got: \"${LAST_NONEMPTY}\""
+    ERRORS=$((ERRORS + 1))
+fi
+
+# ---------------------------------------------------------------------------
+# Rule 6: If Assisted-by is present, validate its format (section 2.4)
+#         Format: Assisted-by: AGENT_NAME:MODEL_VERSION [TOOL1] [TOOL2]
+# ---------------------------------------------------------------------------
+ASSISTED_LINES=$(echo "$CLEANED_MSG" | grep "^Assisted-by:")
+if [ -n "$ASSISTED_LINES" ]; then
+    while IFS= read -r aline; do
+        if ! echo "$aline" | grep -Eq "^Assisted-by: [A-Za-z0-9_-]+:[A-Za-z0-9._-]+( \[[A-Za-z0-9_-]+\])*$"; then
+            error "Invalid Assisted-by format: \"${aline}\""
+            error "  Expected: Assisted-by: AGENT_NAME:MODEL_VERSION [TOOL1] [TOOL2]"
+            ERRORS=$((ERRORS + 1))
+        fi
+    done <<< "$ASSISTED_LINES"
+fi
+
+# ---------------------------------------------------------------------------
+# Rule 7: If Assisted-by is present, it must appear BEFORE Signed-off-by
+#         (section 2.4 placement rules)
+# ---------------------------------------------------------------------------
+if [ -n "$ASSISTED_LINES" ]; then
+    ASSISTED_POS=$(echo "$CLEANED_MSG" | grep -n "^Assisted-by:" | tail -1 | cut -d: -f1)
+    SIGNOFF_POS=$(echo "$CLEANED_MSG"  | grep -n "^Signed-off-by:" | tail -1 | cut -d: -f1)
+    if [ -n "$ASSISTED_POS" ] && [ -n "$SIGNOFF_POS" ]; then
+        if [ "$ASSISTED_POS" -gt "$SIGNOFF_POS" ]; then
+            error "Assisted-by must appear BEFORE Signed-off-by (section 2.4)."
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Final verdict
+# ---------------------------------------------------------------------------
+if [ "$ERRORS" -gt 0 ]; then
+    # Save the failed commit message to the project root for later reuse.
+    # Resolve the repo root relative to this hook's location so it works
+    # regardless of where git is invoked from.
+    REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+    TIMESTAMP=$(date '+%Y%m%d.%H%M%S')
+    SAVED_FILE="${REPO_ROOT}/COMMIT_EDITMSG.${TIMESTAMP}"
+    cp "$COMMIT_MSG_FILE" "$SAVED_FILE"
+
+    echo -e "${RED}--------------------------------------------------------------${NC}" >&2
+    echo -e "${RED}Commit rejected: ${ERRORS} error(s) found.${NC}" >&2
+    echo -e "${RED}See docs/commit_convention.md for formatting rules.${NC}" >&2
+    echo -e "${YELLOW}Your message has been saved to: ${SAVED_FILE}${NC}" >&2
+    echo -e "${YELLOW}Edit and reuse it with: git commit -e -F ${SAVED_FILE}${NC}" >&2
+    echo -e "${RED}--------------------------------------------------------------${NC}" >&2
+    exit 1
+fi
+
+ok "Commit message passes all StocksFlow convention checks."
+exit 0
