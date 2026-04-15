@@ -34,7 +34,7 @@ Place all metadata tags at the very bottom of the commit message.
 * **Fixes:** (Optional) Useful for referencing a previous commit that is being corrected.
 * **Review/Testing Tags:** (Optional) Tags like `Tested-by:`, `Reviewed-by:`, or `StocksFlow-issue:` can be added above the sign-off line to track reviews or external references.
 
-*TODO: It is recommended to use Git hooks (e.g., via `husky` and `commitlint`) to enforce these rules automatically before pushing.*
+*See [Section 4](#4-installing-the-git-hook) for instructions on installing the automated enforcement hook.*
 
 ### 2.4 AI Assistance
 
@@ -109,7 +109,59 @@ Signed-off-by: Your Name <dev@stocksflow.com>
 
 ---
 
-## 4. References
+## 4. Installing the Git Hook
+
+The repository ships a ready-to-use `commit-msg` hook at `script/commit-msg`.
+Install it once per local clone using **one** of the methods below.
+
+### Method A — Symbolic link (recommended)
+
+A symlink means any future updates to `script/commit-msg` are reflected
+immediately without re-installing.
+
+```bash
+# Run from the repository root
+ln -sf "$(pwd)/script/commit-msg" .git/hooks/commit-msg
+chmod +x script/commit-msg
+```
+
+### Method B — Copy
+
+```bash
+cp script/commit-msg .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+```
+
+> **Note:** If you use Method B, remember to re-copy after pulling changes
+> to `script/commit-msg`.
+
+### Verifying the installation
+
+```bash
+bash .git/hooks/commit-msg /dev/null
+# Expected: ERROR lines + exit code 1
+```
+
+### Recovering a rejected commit message
+
+When the hook rejects a commit, it automatically saves your message to
+a timestamped file in the project root:
+
+```
+COMMIT_EDITMSG.YYYYMMDD.HHMMSS
+```
+
+Edit and retry with:
+
+```bash
+git commit -e -F COMMIT_EDITMSG.YYYYMMDD.HHMMSS
+```
+
+These files are listed in `.gitignore` and will never be committed.
+
+---
+
+## 5. References
 
 This document adapts conventions from Linux and Lustre. For more detailed information, please refer to the Linux kernel documentation:
 
