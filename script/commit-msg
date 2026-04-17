@@ -49,7 +49,7 @@ SUMMARY_REGEX="^(SF-[0-9]+|#[0-9]+) ($ALLOWED_COMPONENTS): .+"
 if ! echo "$SUMMARY_LINE" | grep -Eq "$SUMMARY_REGEX"; then
     error "Summary line does not match required format."
     error "  Expected : <SF-NNN|#NNN> <component>: <description>"
-    error "  Components: pages, components, utils, api, cloud, styles, store, config, docs"
+    error "  Components: pages, components, utils, api, cloud, styles, store, config, docs, all, script, tests"
     error "  Got       : \"${SUMMARY_LINE}\""
     ERRORS=$((ERRORS + 1))
 fi
@@ -89,7 +89,7 @@ done < <(echo "$CLEANED_MSG")
 # ---------------------------------------------------------------------------
 LAST_NONEMPTY=$(echo "$CLEANED_MSG" | sed '/^[[:space:]]*$/d' | tail -n 1)
 
-if ! echo "$LAST_NONEMPTY" | grep -Eq "^Signed-off-by: .+ <.+@.+>"; then
+if ! echo "$LAST_NONEMPTY" | grep -Eq "^Signed-off-by: .+ ?<.+@.+>"; then
     error "Last line must be a valid 'Signed-off-by: Name <email>' tag (section 2.3)."
     error "  Got: \"${LAST_NONEMPTY}\""
     ERRORS=$((ERRORS + 1))
