@@ -2,7 +2,12 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node25'
+        nodejs 'node22'
+    }
+
+    environment {
+        WECHAT_KEY_PATH = credentials('WECHAT_MINIPROGRAM_KEY')
+        WECHAT_APPID = credentials('WECHAT_APPID')
     }
 
     stages {
@@ -32,6 +37,13 @@ pipeline {
             }
         }
 
+        stage('Compile & Check') {
+            steps {
+                // Now both variables are available in the environment
+                sh 'npm run check' 
+            }
+        }
+
         stage('Mock Deploy') {
             steps {
                 // Do not execute the real WeChat upload command, just print a success message
@@ -44,6 +56,8 @@ pipeline {
     post {
         success {
             echo 'Congratulations! The test pipeline is fully connected! The GitHub Webhook and Jenkins Docker agent are working perfectly together.'
+            // show QR fig
+            archiveArtifacts artifacts: 'preview_QR.jpg', allowEmptyArchive: true
         }
         failure {
             echo 'Test run failed. Please check the logs above to see which step caused the error.'
