@@ -1,0 +1,180 @@
+/**about.less**/
+
+@bg-color: #F5F6F8;
+@surface-color: #FFFFFF;
+@primary-color: #2F54EB;
+@text-main: #1A1D24;
+@text-secondary: #8C92A4;
+@border-color: #EBF0F5;
+
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: @bg-color;
+}
+
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
+
+.about-page {
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+// ==========================================
+// Brand Section
+// ==========================================
+.brand-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72rpx 40rpx 56rpx;
+  background: linear-gradient(180deg, rgba(47, 84, 235, 0.06) 0%, transparent 100%);
+}
+
+.logo-wrap {
+  margin-bottom: 28rpx;
+}
+
+.logo-icon {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #2F54EB 0%, #597EF7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 32rpx rgba(47, 84, 235, 0.3);
+}
+
+.logo-text {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+}
+
+.app-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: @text-main;
+  margin-bottom: 12rpx;
+}
+
+.app-tagline {
+  font-size: 26rpx;
+  color: @text-secondary;
+  margin-bottom: 16rpx;
+}
+
+.app-version {
+  font-size: 24rpx;
+  color: @text-secondary;
+  background-color: rgba(47, 84, 235, 0.08);
+  padding: 6rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+// ==========================================
+// Info Cards
+// ==========================================
+.info-card {
+  margin: 0 24rpx 20rpx;
+  padding: 36rpx 36rpx;
+  background-color: @surface-color;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: @text-main;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 8rpx;
+    height: 28rpx;
+    background-color: @primary-color;
+    border-radius: 4rpx;
+    margin-right: 16rpx;
+  }
+}
+
+.card-body {
+  font-size: 27rpx;
+  color: @text-secondary;
+  line-height: 1.8;
+}
+
+// ==========================================
+// Features
+// ==========================================
+.feature-list {
+  padding-left: 8rpx;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 0;
+  font-size: 27rpx;
+  color: @text-main;
+}
+
+.feature-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background-color: @primary-color;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+// ==========================================
+// Contact Group
+// ==========================================
+.contact-group {
+  margin: 0 24rpx 20rpx;
+  border-radius: 24rpx !important;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+}
+
+.contact-cell {
+  font-size: 28rpx;
+}
+
+.support-emails {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  line-height: 1.6;
+  color: @text-secondary;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.cell-icon {
+  margin-right: 20rpx;
+  font-size: 36rpx;
+}
+
+// ==========================================
+// Footer
+// ==========================================
+.footer {
+  padding: 48rpx 40rpx 24rpx;
+  text-align: center;
+}
+
+.copyright {
+  font-size: 22rpx;
+  color: @text-secondary;
+}

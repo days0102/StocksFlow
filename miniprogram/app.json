@@ -3,7 +3,9 @@
     "pages/market/market",
     "pages/index/index",
     "pages/logs/logs",
-    "pages/calendar/calendar"
+    "pages/calendar/calendar",
+    "pages/about/about",
+    "pages/feedback/feedback"
   ],
   "window": {
     "navigationBarTextStyle": "black",
