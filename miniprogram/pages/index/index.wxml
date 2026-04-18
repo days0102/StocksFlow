@@ -1,28 +1,163 @@
 <!--index.wxml-->
-<navigation-bar title="Weixin" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<navigation-bar title="我的" back="{{false}}" color="black" background="#FFF"></navigation-bar>
 <scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
-        <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
-        </button>
-        <view class="nickname-wrapper">
-          <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
-        </view>
-      </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-      </block>
+  <view class="page-content">
+
+    <!-- ====== Profile Card (login preserved) ====== -->
+    <view class="profile-card">
+      <!-- <view class="profile-bg"></view> -->
+      <view class="profile-body">
+        <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
+          <!-- Not logged in: avatar chooser + nickname input -->
+          <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+            <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
+          </button>
+          <view class="nickname-wrapper">
+            <text class="nickname-label">昵称</text>
+            <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
+          </view>
+        </block>
+        <block wx:elif="{{!hasUserInfo}}">
+          <button wx:if="{{canIUseGetUserProfile}}" class="login-btn" bindtap="getUserProfile">获取头像昵称</button>
+          <view wx:else class="compat-tip">请使用2.10.4及以上版本基础库</view>
+        </block>
+        <block wx:else>
+          <!-- Logged in: show avatar & name -->
+          <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
+          <text class="userinfo-nickname">{{userInfo.nickName}}</text>
+        </block>
+      </view>
     </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
+
+    <!-- ====== Appearance ====== -->
+    <van-cell-group title="外观设置" border="{{false}}" custom-class="settings-group">
+      <van-cell
+        title="深色模式"
+        is-link
+        value="{{themeLabel}}"
+        bindtap="showThemeSheet"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="bulb-o" class="cell-icon" color="#2F54EB" />
+      </van-cell>
+      <van-cell
+        title="首选语言"
+        is-link
+        value="{{languageLabel}}"
+        bindtap="showLanguageSheet"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="font-o" class="cell-icon" color="#597EF7" />
+      </van-cell>
+    </van-cell-group>
+
+    <!-- ====== Market Preferences ====== -->
+    <van-cell-group title="市场偏好" border="{{false}}" custom-class="settings-group">
+      <van-cell
+        title="默认市场"
+        is-link
+        value="{{defaultMarketLabel}}"
+        bindtap="showMarketSheet"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="chart-trending-o" class="cell-icon" color="#00B87A" />
+      </van-cell>
+    </van-cell-group>
+
+    <!-- ====== Notifications ====== -->
+    <van-cell-group title="消息通知" border="{{false}}" custom-class="settings-group">
+      <van-cell
+        title="订阅消息"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="bell" class="cell-icon" color="#FA8C16" />
+        <van-switch
+          slot="right-icon"
+          size="22px"
+          checked="{{subscriptionEnabled}}"
+          active-color="#2F54EB"
+          bind:change="onSubscriptionToggle"
+        />
+      </van-cell>
+      <van-cell
+        title="通知频率"
+        is-link
+        value="{{notifyFreqLabel}}"
+        bindtap="showNotifySheet"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="clock-o" class="cell-icon" color="#722ED1" />
+      </van-cell>
+    </van-cell-group>
+
+    <!-- ====== About ====== -->
+    <van-cell-group title="关于" border="{{false}}" custom-class="settings-group">
+      <van-cell
+        title="关于我们"
+        is-link
+        bindtap="goToAbout"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="info-o" class="cell-icon" color="#2F54EB" />
+      </van-cell>
+      <van-cell
+        title="意见反馈"
+        is-link
+        bindtap="goToFeedback"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="comment-o" class="cell-icon" color="#13C2C2" />
+      </van-cell>
+      <van-cell
+        title="当前版本"
+        value="{{appVersion}}"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="apps-o" class="cell-icon" color="#8C92A4" />
+      </van-cell>
+    </van-cell-group>
+
+    <!-- ====== Logout ====== -->
+    <view wx:if="{{hasUserInfo}}" class="logout-section">
+      <view class="logout-btn" bindtap="onLogout">退出登录</view>
     </view>
+
+    <!-- ====== ActionSheets ====== -->
+    <van-action-sheet
+      show="{{showThemeSheet}}"
+      actions="{{themeActions}}"
+      cancel-text="取消"
+      bind:close="onThemeSheetClose"
+      bind:cancel="onThemeSheetClose"
+      bind:select="onThemeSelect"
+    />
+
+    <van-action-sheet
+      show="{{showMarketSheet}}"
+      actions="{{marketActions}}"
+      cancel-text="取消"
+      bind:close="onMarketSheetClose"
+      bind:cancel="onMarketSheetClose"
+      bind:select="onMarketSelect"
+    />
+
+    <van-action-sheet
+      show="{{showNotifySheet}}"
+      actions="{{notifyActions}}"
+      cancel-text="取消"
+      bind:close="onNotifySheetClose"
+      bind:cancel="onNotifySheetClose"
+      bind:select="onNotifyFreqSelect"
+    />
+
+    <van-action-sheet
+      show="{{showLanguageSheet}}"
+      actions="{{languageActions}}"
+      cancel-text="取消"
+      bind:close="onLanguageSheetClose"
+      bind:cancel="onLanguageSheetClose"
+      bind:select="onLanguageSelect"
+    />
+
   </view>
 </scroll-view>

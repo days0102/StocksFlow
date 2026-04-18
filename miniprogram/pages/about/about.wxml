@@ -1,0 +1,76 @@
+<!--about.wxml-->
+<navigation-bar title="关于我们" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="about-page">
+
+    <!-- Logo & Brand -->
+    <view class="brand-section">
+      <view class="logo-wrap">
+        <view class="logo-icon">
+          <text class="logo-text">SF</text>
+        </view>
+      </view>
+      <text class="app-name">StocksFlow</text>
+      <text class="app-tagline">全球股市交易时间 · 一目了然</text>
+      <text class="app-version">Version {{appVersion}}</text>
+    </view>
+
+    <!-- App Description -->
+    <view class="info-card">
+      <text class="card-title">关于应用</text>
+      <text class="card-body">StocksFlow 是一款专注于全球股市交易时间追踪的工具型小程序。我们致力于为投资者提供清晰、准确的市场交易时间、假日安排及倒计时提醒，帮助您高效把握每一个交易机会。</text>
+    </view>
+
+    <!-- Features -->
+    <view class="info-card">
+      <text class="card-title">核心功能</text>
+      <view class="feature-list">
+        <view class="feature-item">
+          <view class="feature-dot"></view>
+          <text>全球主要市场交易时间实时显示</text>
+        </view>
+        <view class="feature-item">
+          <view class="feature-dot"></view>
+          <text>盘前 / 盘中 / 盘后状态可视化</text>
+        </view>
+        <view class="feature-item">
+          <view class="feature-dot"></view>
+          <text>市场假期日历与智能提醒</text>
+        </view>
+        <view class="feature-item">
+          <view class="feature-dot"></view>
+          <text>个性化市场偏好配置</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Contact -->
+    <van-cell-group title="联系我们" border="{{false}}" custom-class="contact-group">
+      <van-cell
+        title="开发团队"
+        value="StocksFlow Team"
+        custom-class="contact-cell"
+      >
+        <van-icon slot="icon" name="friends-o" class="cell-icon" color="#2F54EB" />
+      </van-cell>
+      <van-cell
+        title="技术支持"
+        title-width="160rpx"
+        center
+        custom-class="contact-cell"
+      >
+        <van-icon slot="icon" name="envelop-o" class="cell-icon" color="#13C2C2" />
+        <view class="support-emails">
+          <view>weizhao.days@gmail.com</view>
+          <view>ixpqxi@qq.com</view>
+        </view>
+      </van-cell>
+    </van-cell-group>
+
+    <!-- Footer -->
+    <view class="footer">
+      <text class="copyright">© 2026 StocksFlow. All rights reserved.</text>
+    </view>
+
+  </view>
+</scroll-view>

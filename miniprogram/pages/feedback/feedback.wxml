@@ -1,0 +1,66 @@
+<!--feedback.wxml-->
+<navigation-bar title="意见反馈" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="feedback-page">
+
+    <!-- Category selector -->
+    <view class="section-title">反馈类型</view>
+    <view class="category-grid">
+      <view
+        wx:for="{{categories}}"
+        wx:key="value"
+        class="category-chip {{selectedCategory === item.value ? 'active' : ''}}"
+        bindtap="onSelectCategory"
+        data-value="{{item.value}}"
+      >
+        <text class="chip-icon">{{item.icon}}</text>
+        <text class="chip-label">{{item.label}}</text>
+      </view>
+    </view>
+
+    <!-- Feedback content -->
+    <view class="section-title">详细描述</view>
+    <view class="textarea-wrap">
+      <textarea
+        class="feedback-textarea"
+        placeholder="请详细描述您遇到的问题或建议..."
+        maxlength="500"
+        bindinput="onInput"
+        value="{{content}}"
+      />
+      <text class="char-count">{{content.length}}/500</text>
+    </view>
+
+    <!-- Contact -->
+    <view class="section-title">联系方式（选填）</view>
+    <view class="contact-input-wrap">
+      <input
+        class="contact-input"
+        placeholder="邮箱或手机号，方便我们回复您"
+        bindinput="onContactInput"
+        value="{{contact}}"
+      />
+    </view>
+
+    <!-- Submit -->
+    <view class="submit-section">
+      <van-button
+        type="primary"
+        block
+        round
+        color="#2F54EB"
+        custom-class="submit-btn"
+        disabled="{{!canSubmit}}"
+        bindtap="onSubmit"
+      >
+        提交反馈
+      </van-button>
+    </view>
+
+    <!-- Tip -->
+    <view class="tip-section">
+      <text class="tip-text">💡 您的每一条反馈都将帮助我们做得更好，感谢您的支持！</text>
+    </view>
+
+  </view>
+</scroll-view>
