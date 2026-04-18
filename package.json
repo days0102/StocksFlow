@@ -2,7 +2,9 @@
   "name": "miniprogram-ts-less-quickstart",
   "version": "1.0.0",
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "check": "ts-node ./miniprogram/utils/check.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "",
@@ -10,6 +12,9 @@
     "@vant/weapp": "^1.11.7"
   },
   "devDependencies": {
-    "miniprogram-api-typings": "^2.8.3-1"
+    "miniprogram-api-typings": "^2.8.3-1",
+    "miniprogram-ci": "^2.1.31",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
   }
 }
