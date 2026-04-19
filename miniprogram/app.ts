@@ -1,11 +1,15 @@
 // app.ts
+import { addLog } from './utils/util'
+
 App<IAppOption>({
   globalData: {},
   onLaunch() {
-    // 展示本地存储能力
-    const logs = wx.getStorageSync('logs') || []
-    logs.unshift(Date.now())
-    wx.setStorageSync('logs', logs)
+    let logs = wx.getStorageSync('logs') || []
+    if (logs.length > 0 && typeof logs[0] === 'number') {
+      logs = logs.map((time: number) => ({ time, action: '应用启动', detail: 'App Launch' }))
+      wx.setStorageSync('logs', logs)
+    }
+    addLog('应用启动', '小程序拉起/初始化')
 
     // 登录
     wx.login({

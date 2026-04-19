@@ -2,6 +2,7 @@
 // Get an example of the application
 const app = getApp<IAppOption>()
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
+import { addLog } from '../../utils/util'
 
 // ── Label maps ──
 const THEME_MAP: Record<string, string> = {
@@ -168,6 +169,7 @@ Component({
 
     saveSettings(key: string, value: any) {
       wx.setStorageSync(`settings_${key}`, value)
+      // Only log specific setting changes explicitly in their specific handlers to provide better localized labels 
     },
 
     // ============================================================
@@ -187,6 +189,7 @@ Component({
         showThemeSheet: false,
       })
       this.saveSettings('themeMode', value)
+      addLog('更改主题模式', `变更为: ${THEME_MAP[value]}`)
       wx.showToast({ title: '已切换为' + THEME_MAP[value], icon: 'none', duration: 1500 })
     },
 
@@ -207,6 +210,7 @@ Component({
         showLanguageSheet: false,
       })
       this.saveSettings('language', value)
+      addLog('更改首选语言', `变更为: ${LANGUAGE_MAP[value]}`)
       wx.showToast({ title: '语言已设为' + LANGUAGE_MAP[value], icon: 'none', duration: 1500 })
     },
 
@@ -227,6 +231,7 @@ Component({
         showMarketSheet: false,
       })
       this.saveSettings('defaultMarket', value)
+      addLog('更改默认市场', `变更为: ${MARKET_MAP[value]}`)
       wx.showToast({ title: '默认市场已设为' + MARKET_MAP[value], icon: 'none', duration: 1500 })
     },
 
@@ -237,6 +242,7 @@ Component({
       const enabled = e.detail
       this.setData({ subscriptionEnabled: enabled })
       this.saveSettings('subscriptionEnabled', enabled)
+      addLog('消息订阅服务', enabled ? '开启订阅服务' : '关闭订阅服务')
 
       if (enabled) {
         // Request subscription message permission
@@ -268,12 +274,16 @@ Component({
         showNotifySheet: false,
       })
       this.saveSettings('notifyFrequency', value)
+      addLog('更改通知频率', `变更为: ${NOTIFY_FREQ_MAP[value]}`)
       wx.showToast({ title: '通知频率已设为' + NOTIFY_FREQ_MAP[value], icon: 'none', duration: 1500 })
     },
 
     // ============================================================
     // Navigation
     // ============================================================
+    goToLogs() {
+      wx.navigateTo({ url: '/pages/logs/logs' })
+    },
     goToAbout() {
       wx.navigateTo({ url: '/pages/about/about' })
     },
@@ -299,6 +309,7 @@ Component({
             })
             this.saveSettings('userInfo', null)
             this.saveSettings('hasUserInfo', false)
+            addLog('退出登录', '账号已注销')
             wx.showToast({ title: '已退出登录', icon: 'none' })
           }
         }

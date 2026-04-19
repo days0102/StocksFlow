@@ -54,6 +54,15 @@
         <van-icon slot="icon" name="friends-o" class="cell-icon" color="#2F54EB" />
       </van-cell>
       <van-cell
+        title="开源主页"
+        value="复制 GitHub 链接"
+        is-link
+        bindtap="copyGithubLink"
+        custom-class="contact-cell"
+      >
+        <van-icon slot="icon" name="cluster-o" class="cell-icon" color="#333333" />
+      </van-cell>
+      <van-cell
         title="技术支持"
         title-width="160rpx"
         center
