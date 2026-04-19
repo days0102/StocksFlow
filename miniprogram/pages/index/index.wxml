@@ -93,6 +93,14 @@
     <!-- ====== About ====== -->
     <van-cell-group title="关于" border="{{false}}" custom-class="settings-group">
       <van-cell
+        title="操作日志"
+        is-link
+        bindtap="goToLogs"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="notes-o" class="cell-icon" color="#FA541C" />
+      </van-cell>
+      <van-cell
         title="关于我们"
         is-link
         bindtap="goToAbout"

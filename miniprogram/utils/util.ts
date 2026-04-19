@@ -17,3 +17,14 @@ const formatNumber = (n: number) => {
   const s = n.toString()
   return s[1] ? s : '0' + s
 }
+
+export const addLog = (action: string, detail: string = '') => {
+  const logs = wx.getStorageSync('logs') || []
+  logs.unshift({
+    time: Date.now(),
+    action,
+    detail
+  })
+  if (logs.length > 50) logs.pop()
+  wx.setStorageSync('logs', logs)
+}

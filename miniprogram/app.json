@@ -5,7 +5,8 @@
     "pages/logs/logs",
     "pages/calendar/calendar",
     "pages/about/about",
-    "pages/feedback/feedback"
+    "pages/feedback/feedback",
+    "pages/notification/notification"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -13,31 +14,32 @@
   },
   "tabBar": {
     "selectedColor": "#3f72af",
-    "list": [{
-      "pagePath": "pages/market/market",
-      "text": "时间",
-      "iconPath": "public/time.png",
-      "selectedIconPath": "public/time_active.png"
-    },
-    {
-      "pagePath": "pages/calendar/calendar",
-      "text": "日历",
-      "iconPath": "public/calendar.png",
-      "selectedIconPath": "public/calendar_active.png"
-    },
-    {
-      "pagePath": "pages/logs/logs",
-      "text": "通知",
-      "iconPath": "public/notification.png",
-      "selectedIconPath": "public/notification_active.png"
-    },
-    {
-      "pagePath": "pages/index/index",
-      "text": "我的",
-      "iconPath": "public/profile.png",
-      "selectedIconPath": "public/profile_active.png"
-    }
-  ]
+    "list": [
+      {
+        "pagePath": "pages/market/market",
+        "text": "时间",
+        "iconPath": "public/time.png",
+        "selectedIconPath": "public/time_active.png"
+      },
+      {
+        "pagePath": "pages/calendar/calendar",
+        "text": "日历",
+        "iconPath": "public/calendar.png",
+        "selectedIconPath": "public/calendar_active.png"
+      },
+      {
+        "pagePath": "pages/notification/notification",
+        "text": "通知",
+        "iconPath": "public/notification.png",
+        "selectedIconPath": "public/notification_active.png"
+      },
+      {
+        "pagePath": "pages/index/index",
+        "text": "我的",
+        "iconPath": "public/profile.png",
+        "selectedIconPath": "public/profile_active.png"
+      }
+    ]
   },
   "style": "v2",
   "rendererOptions": {

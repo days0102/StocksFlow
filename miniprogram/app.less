@@ -1,4 +1,19 @@
 /**app.wxss**/
+
+/**
+* fix bug
+* Failed to load font http://at.alicdn.com/t/c/font_2553510_kfwma2yq1rs.woff2?t=1694918397022
+* net::ERR_CACHE_MISS 
+* (env: Windows,mp,2.01.2510290; lib: 2.32.3)
+*/
+@font-face {
+  font-family: 'vant-icon';
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://at.alicdn.com/t/c/font_2553510_kfwma2yq1rs.woff2?t=1694918397022") format("woff2"),
+    url("https://at.alicdn.com/t/c/font_2553510_kfwma2yq1rs.woff?t=1694918397022") format("woff");
+}
+
 .container {
   height: 100%;
   display: flex;
@@ -7,4 +22,4 @@
   justify-content: space-between;
   padding: 200rpx 0;
   box-sizing: border-box;
-} 
+}
