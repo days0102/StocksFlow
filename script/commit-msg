@@ -43,13 +43,13 @@ fi
 #   - Component: single lowercase word from the allowed list (section 2.1)
 #   - Description: non-empty
 # ---------------------------------------------------------------------------
-ALLOWED_COMPONENTS="pages|components|utils|api|cloud|styles|store|config|docs|all|script|tests"
+ALLOWED_COMPONENTS="pages|components|utils|api|cloud|styles|store|config|docs|all|script|tests|ci"
 SUMMARY_REGEX="^(SF-[0-9]+|#[0-9]+) ($ALLOWED_COMPONENTS): .+"
 
 if ! echo "$SUMMARY_LINE" | grep -Eq "$SUMMARY_REGEX"; then
     error "Summary line does not match required format."
     error "  Expected : <SF-NNN|#NNN> <component>: <description>"
-    error "  Components: pages, components, utils, api, cloud, styles, store, config, docs, all, script, tests"
+    error "  Components: pages, components, utils, api, cloud, styles, store, config, docs, all, script, tests, ci"
     error "  Got       : \"${SUMMARY_LINE}\""
     ERRORS=$((ERRORS + 1))
 fi
