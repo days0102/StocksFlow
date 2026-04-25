@@ -76,6 +76,8 @@ Component({
 
     // ── Notification ──
     subscriptionEnabled: true,
+    activeSubCount: 0,
+    activeSubLabel: '',
     notifyFrequency: 'daily',
     notifyFreqLabel: '每日一次',
     showNotifySheet: false,
@@ -96,13 +98,24 @@ Component({
     },
   },
 
+  pageLifetimes: {
+    show() {
+      const subs = wx.getStorageSync('settings_subscriptions') || []
+      const activeCount = subs.filter((s: any) => s.enabled).length
+      this.setData({
+        activeSubCount: activeCount,
+        activeSubLabel: activeCount > 0 ? `${activeCount}个市场已订阅` : '未订阅',
+      })
+    },
+  },
+
   methods: {
     // ============================================================
     // Login methods (preserved from original)
     // ============================================================
     bindViewTap() {
-      wx.navigateTo({
-        url: '../logs/logs',
+      wx.switchTab({
+        url: '/pages/notification/notification',
       })
     },
     onChooseAvatar(e: any) {
@@ -153,6 +166,10 @@ Component({
       const savedUserInfo = wx.getStorageSync('settings_userInfo')
       const hasUserInfo = wx.getStorageSync('settings_hasUserInfo') || false
 
+      // Load active subscription count
+      const subs = wx.getStorageSync('settings_subscriptions') || []
+      const activeCount = subs.filter((s: any) => s.enabled).length
+
       this.setData({
         themeMode,
         themeLabel: THEME_MAP[themeMode] || '跟随系统',
@@ -163,6 +180,8 @@ Component({
         subscriptionEnabled: subscriptionEnabled === '' ? true : subscriptionEnabled,
         notifyFrequency,
         notifyFreqLabel: NOTIFY_FREQ_MAP[notifyFrequency] || '每日一次',
+        activeSubCount: activeCount,
+        activeSubLabel: activeCount > 0 ? `${activeCount}个市场已订阅` : '未订阅',
         ...(savedUserInfo ? { userInfo: savedUserInfo, hasUserInfo } : {}),
       })
     },
@@ -283,6 +302,9 @@ Component({
     // ============================================================
     goToLogs() {
       wx.navigateTo({ url: '/pages/logs/logs' })
+    },
+    goToNotifications() {
+      wx.switchTab({ url: '/pages/notification/notification' })
     },
     goToAbout() {
       wx.navigateTo({ url: '/pages/about/about' })
