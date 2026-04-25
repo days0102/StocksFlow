@@ -88,6 +88,15 @@
       >
         <van-icon slot="icon" name="clock-o" class="cell-icon" color="#722ED1" />
       </van-cell>
+      <van-cell
+        title="管理订阅"
+        is-link
+        value="{{activeSubLabel}}"
+        bindtap="goToNotifications"
+        custom-class="settings-cell"
+      >
+        <van-icon slot="icon" name="enlarge" class="cell-icon" color="#13C2C2" />
+      </van-cell>
     </van-cell-group>
 
     <!-- ====== About ====== -->

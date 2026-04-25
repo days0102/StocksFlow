@@ -1,8 +1,106 @@
-<!--logs.wxml-->
-<navigation-bar title="查看启动日志" back="{{true}}" color="black" background="#FFF"></navigation-bar>
-
+<!--notification.wxml-->
+<navigation-bar title="通知" back="{{false}}" color="black" background="#FFF"></navigation-bar>
 <scroll-view class="scrollarea" scroll-y type="list">
-  <block wx:for="{{logs}}" wx:key="timeStamp" wx:for-item="log">
-    <view class="log-item">{{index + 1}}. {{log.date}}</view>
-  </block>
+  <view class="page-content">
+
+    <!-- ====== Info Banner ====== -->
+    <view class="info-banner">
+      <view class="banner-icon-wrap">
+        <text class="banner-icon">🔔</text>
+      </view>
+      <view class="banner-body">
+        <text class="banner-title">开启通知，不再错过交易机会</text>
+        <text class="banner-desc">订阅市场开盘提醒，在选定的时间接收通知。每次授权仅对单次消息有效，建议保持关注。</text>
+      </view>
+    </view>
+
+    <!-- ====== Market Subscriptions ====== -->
+    <van-cell-group title="市场订阅" border="{{false}}" custom-class="section-group">
+      <view class="section-desc">选择需要接收通知的市场，并设定提醒时机</view>
+
+      <view
+        class="subscription-item"
+        wx:for="{{subscriptions}}"
+        wx:key="marketId"
+        data-index="{{index}}"
+      >
+        <view class="sub-info">
+          <view class="sub-header">
+            <text class="sub-name">{{item.marketName}}</text>
+            <text class="sub-open-time">开盘 {{item.openTime}} CST</text>
+          </view>
+          <view
+            class="sub-timing-row"
+            bindtap="showTimingPicker"
+            data-index="{{index}}"
+          >
+            <text class="sub-timing-label">提醒时机：{{item.timingLabel}}</text>
+            <van-icon name="arrow-down" size="10px" color="#8C92A4" />
+          </view>
+        </view>
+        <van-switch
+          size="22px"
+          checked="{{item.enabled}}"
+          active-color="#2F54EB"
+          bind:change="onMarketToggle"
+          data-index="{{index}}"
+        />
+      </view>
+
+      <view class="authorize-row" wx:if="{{tmplIds.length > 0}}">
+        <view class="authorize-btn" bindtap="onAuthorizeAll">
+          <text>一键授权订阅消息</text>
+        </view>
+      </view>
+    </van-cell-group>
+
+    <!-- ====== Notification Messages ====== -->
+    <van-cell-group title="通知记录" border="{{false}}" custom-class="section-group">
+      <view class="section-desc">最近的交易提醒和系统通知</view>
+
+      <block wx:if="{{notifyMessages.length > 0}}">
+        <view
+          class="message-item"
+          wx:for="{{notifyMessages}}"
+          wx:key="id"
+          bindtap="onTapMessage"
+          data-index="{{index}}"
+        >
+          <view class="msg-indicator {{item.read ? 'read' : ''}}"></view>
+          <view class="msg-body">
+            <view class="msg-header">
+              <text class="msg-title">{{item.title}}</text>
+              <van-tag type="{{item.read ? 'default' : 'primary'}}" size="mini" custom-class="msg-tag">
+                {{item.marketName}}
+              </van-tag>
+            </view>
+            <text class="msg-content">{{item.content}}</text>
+            <text class="msg-time">{{item.date}} {{item.time}}</text>
+          </view>
+        </view>
+      </block>
+
+      <view class="empty-state" wx:else>
+        <text class="empty-icon">📭</text>
+        <text class="empty-text">暂无通知记录</text>
+        <text class="empty-hint">开启市场订阅后，通知将显示在这里</text>
+      </view>
+    </van-cell-group>
+
+    <!-- ====== Footer ====== -->
+    <view class="footer-note">
+      <text>提示：微信订阅消息需每次手动触发授权，您开启订阅后我们会记录偏好，但实际发送需要您点击授权。模板ID请在微信小程序后台「功能 > 订阅消息」中配置。</text>
+    </view>
+
+  </view>
 </scroll-view>
+
+<!-- ====== Timing Action Sheet ====== -->
+<van-action-sheet
+  show="{{showTimingSheet}}"
+  actions="{{timingOptions}}"
+  cancel-text="取消"
+  bind:close="onTimingSheetClose"
+  bind:cancel="onTimingSheetClose"
+  bind:select="onTimingSelect"
+/>
