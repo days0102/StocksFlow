@@ -1,5 +1,5 @@
 <view class="weui-navigation-bar {{extClass}}">
-  <view class="weui-navigation-bar__inner {{ios ? 'ios' : 'android'}}" style="color: {{color}}; background: {{background}}; {{displayStyle}}; {{innerPaddingRight}}; {{safeAreaTop}};">
+  <view class="weui-navigation-bar__inner {{ios ? 'ios' : 'android'}}" style="--weui-FG-0: {{color || 'var(--app-text-main-color, #111827)'}}; color: {{color || 'var(--app-text-main-color, #111827)'}}; background: {{background || 'var(--app-surface-color, #FFFFFF)'}}; {{displayStyle}}; {{innerPaddingRight}}; {{safeAreaTop}};">
 
     <!-- 左侧按钮 -->
     <view class='weui-navigation-bar__left' style="{{leftWidth}};">

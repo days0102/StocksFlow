@@ -1,22 +1,25 @@
 /**feedback.less**/
 
-@bg-color: #F5F6F8;
-@surface-color: #FFFFFF;
-@primary-color: #2F54EB;
-@text-main: #1A1D24;
-@text-secondary: #8C92A4;
-@border-color: #EBF0F5;
+@bg-color: var(--app-bg-color, #F5F6F8);
+@surface-color: var(--app-surface-color, #FFFFFF);
+@primary-color: var(--app-primary-color, #2F54EB);
+@text-main: var(--app-text-main-color, #1A1D24);
+@text-secondary: var(--app-text-secondary-color, #8C92A4);
+@border-color: var(--app-border-color, #EBF0F5);
 
 page {
   height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: @bg-color;
+  color: @text-main;
+  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
 }
 
 .scrollarea {
   flex: 1;
   overflow-y: hidden;
+  background-color: @bg-color;
 }
 
 .feedback-page {
@@ -76,7 +79,7 @@ page {
   }
 
   &.active {
-    background-color: rgba(47, 84, 235, 0.08);
+    background-color: var(--app-primary-light-color, rgba(47, 84, 235, 0.08));
     border-color: @primary-color;
 
     .chip-label {
@@ -99,7 +102,7 @@ page {
   border-radius: 24rpx;
   padding: 28rpx;
   margin-bottom: 40rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4rpx 16rpx var(--app-shadow-color, rgba(0, 0, 0, 0.02));
 }
 
 .feedback-textarea {
@@ -127,7 +130,7 @@ page {
   border-radius: 24rpx;
   padding: 24rpx 28rpx;
   margin-bottom: 48rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4rpx 16rpx var(--app-shadow-color, rgba(0, 0, 0, 0.02));
 }
 
 .contact-input {
@@ -147,7 +150,7 @@ page {
   font-size: 30rpx !important;
   font-weight: 600 !important;
   height: 88rpx !important;
-  box-shadow: 0 8rpx 24rpx rgba(47, 84, 235, 0.25);
+  box-shadow: 0 8rpx 24rpx var(--app-shadow-color, rgba(47, 84, 235, 0.25));
 }
 
 // ==========================================

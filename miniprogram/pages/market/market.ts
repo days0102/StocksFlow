@@ -1,5 +1,14 @@
+import {
+  MarketId,
+  createRuntimeData,
+  getAppSettings,
+  getI18n,
+  getMarketLabel,
+  syncRuntimeSettings,
+} from '../../utils/settings'
+
 interface IMarket {
-  id: string,
+  id: MarketId,
   symbol: string;
   name: string;
   tzLabel: string;
@@ -13,7 +22,7 @@ interface ITimeSlot {
   startSec: number;   // The number of seconds of the day at the start time
   endSec: number;     // The number of seconds of the day at the end time
   duration: number;   // Lasts seconds
-  colorType: string;  // Style type：pre | normal | post
+  colorType: SlotType;  // Style type：pre | normal | post
   widthPct: number;   // The percentage of width in the progress bar
 }
 
@@ -31,10 +40,12 @@ const MARKET_DATA: IMarket[] = [
   { id: 'uk', symbol: 'UK', name: '英股', tzLabel: 'GMT', ianaZone: 'Europe/London' },
 ]
 
+type SlotType = 'pre' | 'normal' | 'post'
+
 const RAW_SLOTS = [
-  { label: '盘前交易', startStr: '04:00', endStr: '09:30', colorType: 'pre' },
-  { label: '正常交易', startStr: '09:30', endStr: '16:00', colorType: 'normal' },
-  { label: '盘后交易', startStr: '16:00', endStr: '20:00', colorType: 'post' }
+  { startStr: '04:00', endStr: '09:30', colorType: 'pre' as SlotType },
+  { startStr: '09:30', endStr: '16:00', colorType: 'normal' as SlotType },
+  { startStr: '16:00', endStr: '20:00', colorType: 'post' as SlotType }
 ]
 
 const MOCK_HOLIDAYS: IHoliday[] = [
@@ -45,11 +56,28 @@ const MOCK_HOLIDAYS: IHoliday[] = [
 
 let timer: number | null = null;
 
+function buildMarketData() {
+  const language = getAppSettings().language
+  return MARKET_DATA.map(market => ({
+    ...market,
+    name: getMarketLabel(market.id, language),
+  }))
+}
+
+function getInitialMarketData() {
+  const marketList = buildMarketData()
+  const currentMarketId = getAppSettings().defaultMarket
+  return {
+    marketList,
+    currentMarketId,
+    currentMarket: marketList.find(market => market.id === currentMarketId) || marketList[0],
+  }
+}
+
 Component({
   data: {
-    marketList: MARKET_DATA,
-    currentMarketId: 'cn',
-    currentMarket: MARKET_DATA[0],
+    ...createRuntimeData(),
+    ...getInitialMarketData(),
     localTimeStr: '00:00:00',
 
     isMarketOpen: false,
@@ -64,11 +92,26 @@ Component({
   },
 
   methods: {
+    applySettingState() {
+      syncRuntimeSettings(this)
+      const marketList = buildMarketData()
+      const currentMarketId = getAppSettings().defaultMarket
+      const currentMarket = marketList.find((m: IMarket) => m.id === currentMarketId) || marketList[0]
+      this.setData({
+        marketList,
+        currentMarketId,
+        currentMarket,
+      }, () => {
+        this.initTimeline()
+        this.updateLocalTime()
+      })
+    },
+
     onSwitchMarket(e: WechatMiniprogram.TouchEvent) {
-      const { id } = e.currentTarget.dataset;
+      const id = e.currentTarget.dataset.id as MarketId;
       if (id === this.data.currentMarketId) return;
 
-      const targetMarket = this.data.marketList.find(m => m.id === id);
+      const targetMarket = this.data.marketList.find((m: IMarket) => m.id === id);
       if (targetMarket) {
         // Updates the currently selected market and triggers a time refresh immediately
         this.setData({
@@ -150,7 +193,7 @@ Component({
         pinPct = 100;
       } else {
         pinPct = ((nowSeconds - totalStartSec) / totalDuration) * 100;
-        currentSlotIndex = timelineSlots.findIndex(s => nowSeconds >= s.startSec && nowSeconds < s.endSec);
+        currentSlotIndex = timelineSlots.findIndex((s: ITimeSlot) => nowSeconds >= s.startSec && nowSeconds < s.endSec);
       }
 
       this.setData({
@@ -176,9 +219,11 @@ Component({
         const startSec = timeToSeconds(slot.startStr);
         const endSec = timeToSeconds(slot.endStr);
         const duration = endSec - startSec;
+        const i18n = getI18n(getAppSettings().language);
 
         return {
           ...slot,
+          label: i18n.market.stages[slot.colorType],
           startSec,
           endSec,
           duration,
@@ -214,7 +259,7 @@ Component({
   // Life cycle
   lifetimes: {
     attached() {
-      this.initTimeline();
+      this.applySettingState();
       this.startClock();
     },
     detached() {
@@ -228,6 +273,7 @@ Component({
     show() {
       // If returning from another page,
       // make sure the clock is still running
+      this.applySettingState();
       if (!timer) this.startClock();
     },
     hide() {

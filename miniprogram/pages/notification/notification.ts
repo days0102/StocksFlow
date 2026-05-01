@@ -1,25 +1,36 @@
+import {
+  MarketId,
+  SUBSCRIBE_TEMPLATE_IDS,
+  createRuntimeData,
+  getAppSettings,
+  getI18n,
+  getMarketLabel,
+  syncRuntimeSettings,
+} from '../../utils/settings'
+
+type TimingValue = 'at_open' | '5min_before' | '15min_before'
+
 const MARKET_LIST = [
-  { id: 'cn', name: 'A股', icon: '🇨🇳', openTime: '09:30' },
-  { id: 'hk', name: '港股', icon: '🇭🇰', openTime: '09:30' },
-  { id: 'us', name: '美股', icon: '🇺🇸', openTime: '09:30' },
-  { id: 'uk', name: '英股', icon: '🇬🇧', openTime: '08:00' },
+  { id: 'cn' as MarketId, icon: 'CN', openTime: '09:30' },
+  { id: 'hk' as MarketId, icon: 'HK', openTime: '09:30' },
+  { id: 'us' as MarketId, icon: 'US', openTime: '09:30' },
+  { id: 'uk' as MarketId, icon: 'UK', openTime: '08:00' },
 ]
 
-const TIMING_OPTIONS = [
-  { name: '开盘时', value: 'at_open' },
-  { name: '开盘前5分钟', value: '5min_before' },
-  { name: '开盘前15分钟', value: '15min_before' },
-]
+const TIMING_VALUES: TimingValue[] = ['at_open', '5min_before', '15min_before']
 
-const TIMING_MAP: Record<string, string> = {
-  at_open: '开盘时',
-  '5min_before': '开盘前5分钟',
-  '15min_before': '开盘前15分钟',
+function getTimingLabel(value: TimingValue) {
+  return getI18n(getAppSettings().language).notification.timings[value]
 }
 
-// 微信订阅消息模板ID — 在微信小程序后台「订阅消息」中配置后填入
-// WeChat subscription message template IDs — configure in WeChat Mini Program Console
-const TMPL_IDS: string[] = []
+function buildTimingOptions() {
+  const actionTextColor = createRuntimeData(getAppSettings()).appTheme.textMainColor
+  return TIMING_VALUES.map(value => ({
+    name: getTimingLabel(value),
+    value,
+    color: actionTextColor,
+  }))
+}
 
 function generateMockMessages() {
   const now = new Date()
@@ -99,13 +110,16 @@ function generateMockMessages() {
 
 Component({
   data: {
+    ...createRuntimeData(),
     marketList: MARKET_LIST,
-    timingOptions: TIMING_OPTIONS,
+    timingOptions: buildTimingOptions(),
     subscriptions: [] as any[],
     activeMarketIndex: -1,
     showTimingSheet: false,
     notifyMessages: [] as any[],
-    tmplIds: TMPL_IDS,
+    tmplIds: SUBSCRIBE_TEMPLATE_IDS,
+    subscriptionEnabled: getAppSettings().subscriptionEnabled,
+    notifyFrequency: getAppSettings().notifyFrequency,
   },
 
   lifetimes: {
@@ -113,27 +127,38 @@ Component({
       this.loadData()
     },
   },
+  pageLifetimes: {
+    show() {
+      this.loadData()
+    },
+  },
 
   methods: {
     loadData() {
+      syncRuntimeSettings(this)
+      const settings = getAppSettings()
       const saved = wx.getStorageSync('settings_subscriptions') || []
       const subscriptions = MARKET_LIST.map(market => {
         const savedSub = saved.find((s: any) => s.marketId === market.id)
-        const timing = (savedSub && savedSub.timing) || '15min_before'
+        const timing = ((savedSub && savedSub.timing) || '15min_before') as TimingValue
         return {
           marketId: market.id,
-          marketName: market.name,
+          marketName: getMarketLabel(market.id, settings.language),
           marketIcon: market.icon,
           openTime: market.openTime,
           enabled: savedSub ? savedSub.enabled : false,
           timing,
-          timingLabel: TIMING_MAP[timing] || '开盘前15分钟',
+          timingLabel: getTimingLabel(timing),
         }
       })
 
       this.setData({
         subscriptions,
+        timingOptions: buildTimingOptions(),
         notifyMessages: generateMockMessages(),
+        tmplIds: SUBSCRIBE_TEMPLATE_IDS,
+        subscriptionEnabled: settings.subscriptionEnabled,
+        notifyFrequency: settings.notifyFrequency,
       })
     },
 
@@ -159,23 +184,36 @@ Component({
       const index = e.currentTarget.dataset.index
       const enabled = e.detail
       const sub = this.data.subscriptions[index]
+      const i18n = getI18n(getAppSettings().language).notification
+
+      if (enabled && !this.data.subscriptionEnabled) {
+        wx.showToast({ title: i18n.enableSettingsFirst, icon: 'none' })
+        this.updateSub(index, { enabled: false })
+        return
+      }
 
       if (enabled) {
+        if (this.data.tmplIds.length === 0) {
+          this.updateSub(index, { enabled: true })
+          wx.showToast({ title: `${sub.marketName}${i18n.localEnabled}`, icon: 'none' })
+          return
+        }
+
         wx.requestSubscribeMessage({
           tmplIds: this.data.tmplIds,
           success: () => {
             this.updateSub(index, { enabled: true })
-            wx.showToast({ title: `${sub.marketName}通知已开启`, icon: 'none' })
+            wx.showToast({ title: `${sub.marketName}${i18n.localEnabled}`, icon: 'none' })
           },
           fail: () => {
             // 用户拒绝授权但也保存偏好，后续可重新授权
             this.updateSub(index, { enabled: true })
-            wx.showToast({ title: '建议授权以接收通知', icon: 'none', duration: 2000 })
+            wx.showToast({ title: i18n.authSuggest, icon: 'none', duration: 2000 })
           },
         })
       } else {
         this.updateSub(index, { enabled: false })
-        wx.showToast({ title: `${sub.marketName}通知已关闭`, icon: 'none' })
+        wx.showToast({ title: `${sub.marketName}${i18n.disabled}`, icon: 'none' })
       }
     },
 
@@ -192,30 +230,32 @@ Component({
     },
 
     onTimingSelect(e: any) {
-      const { value } = e.detail
+      const value = e.detail.value as TimingValue
       const index = this.data.activeMarketIndex
       this.updateSub(index, {
         timing: value,
-        timingLabel: TIMING_MAP[value] || value,
+        timingLabel: getTimingLabel(value),
       })
       this.setData({ showTimingSheet: false })
 
       const sub = this.data.subscriptions[index]
+      const i18n = getI18n(getAppSettings().language).notification
       wx.showToast({
-        title: `${sub.marketName}提醒：${TIMING_MAP[value]}`,
+        title: `${sub.marketName}${i18n.timingPrefix}${getTimingLabel(value)}`,
         icon: 'none',
         duration: 1500,
       })
     },
 
     onAuthorizeAll() {
+      const i18n = getI18n(getAppSettings().language).notification
       wx.requestSubscribeMessage({
         tmplIds: this.data.tmplIds,
         success: () => {
-          wx.showToast({ title: '订阅授权成功', icon: 'none' })
+          wx.showToast({ title: i18n.authSuccess, icon: 'none' })
         },
         fail: () => {
-          wx.showToast({ title: '授权失败，请稍后重试', icon: 'none' })
+          wx.showToast({ title: i18n.authFail, icon: 'none' })
         },
       })
     },

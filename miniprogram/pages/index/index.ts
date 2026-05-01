@@ -1,38 +1,67 @@
 // index.ts
-// Get an example of the application
-const app = getApp<IAppOption>()
-const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 import { addLog } from '../../utils/util'
+import {
+  APP_VERSION,
+  AppSettings,
+  LANGUAGE_OPTIONS,
+  LanguageCode,
+  MARKET_OPTIONS,
+  MarketId,
+  NOTIFY_FREQ_OPTIONS,
+  NotifyFrequency,
+  SUBSCRIBE_TEMPLATE_IDS,
+  THEME_OPTIONS,
+  ThemeMode,
+  buildActions,
+  createRuntimeData,
+  getAppSettings,
+  getI18n,
+  getLanguageLabel,
+  getMarketLabel,
+  getNotifyFrequencyLabel,
+  getSubscribedLabel,
+  getThemeLabel,
+  setAppSetting,
+  syncRuntimeSettings,
+} from '../../utils/settings'
 
-// ── Label maps ──
-const THEME_MAP: Record<string, string> = {
-  system: '跟随系统',
-  light: '浅色模式',
-  dark: '深色模式',
+const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
+
+function getActiveSubCount() {
+  const subs = wx.getStorageSync('settings_subscriptions') || []
+  return subs.filter((s: any) => s.enabled).length
 }
 
-const MARKET_MAP: Record<string, string> = {
-  cn: 'A股',
-  hk: '港股',
-  us: '美股',
-  uk: '英股',
-}
+function getSettingsData(settings: AppSettings = getAppSettings()) {
+  const activeCount = getActiveSubCount()
+  const runtimeData = createRuntimeData(settings)
+  const actionTextColor = runtimeData.appTheme.textMainColor
 
-const NOTIFY_FREQ_MAP: Record<string, string> = {
-  realtime: '实时推送',
-  daily: '每日一次',
-  weekly: '每周一次',
-  off: '关闭',
-}
-
-const LANGUAGE_MAP: Record<string, string> = {
-  'zh-CN': '简体中文',
-  'zh-TW': '繁體中文',
-  'en': 'English',
+  return {
+    ...runtimeData,
+    themeMode: settings.themeMode,
+    themeLabel: getThemeLabel(settings.themeMode, settings.language),
+    themeActions: buildActions(THEME_OPTIONS, settings.language, actionTextColor),
+    language: settings.language,
+    languageLabel: getLanguageLabel(settings.language, settings.language),
+    languageActions: buildActions(LANGUAGE_OPTIONS, settings.language, actionTextColor),
+    defaultMarket: settings.defaultMarket,
+    defaultMarketLabel: getMarketLabel(settings.defaultMarket, settings.language),
+    marketActions: buildActions(MARKET_OPTIONS, settings.language, actionTextColor),
+    subscriptionEnabled: settings.subscriptionEnabled,
+    notifyFrequency: settings.notifyFrequency,
+    notifyFreqLabel: getNotifyFrequencyLabel(settings.notifyFrequency, settings.language),
+    notifyActions: buildActions(NOTIFY_FREQ_OPTIONS, settings.language, actionTextColor),
+    activeSubCount: activeCount,
+    activeSubLabel: getSubscribedLabel(activeCount, settings.language),
+    appVersion: APP_VERSION,
+  }
 }
 
 Component({
   data: {
+    ...getSettingsData(),
+
     // ── Login (preserved) ──
     motto: 'Hello World',
     userInfo: {
@@ -44,52 +73,16 @@ Component({
     canIUseNicknameComp: wx.canIUse('input.type.nickname'),
 
     // ── Theme ──
-    themeMode: 'system',
-    themeLabel: '跟随系统',
     showThemeSheet: false,
-    themeActions: [
-      { name: '跟随系统', value: 'system' },
-      { name: '浅色模式', value: 'light' },
-      { name: '深色模式', value: 'dark' },
-    ],
 
     // ── Language ──
-    language: 'zh-CN',
-    languageLabel: '简体中文',
     showLanguageSheet: false,
-    languageActions: [
-      { name: '简体中文', value: 'zh-CN' },
-      { name: '繁體中文', value: 'zh-TW' },
-      { name: 'English', value: 'en' },
-    ],
 
     // ── Market ──
-    defaultMarket: 'cn',
-    defaultMarketLabel: 'A股',
     showMarketSheet: false,
-    marketActions: [
-      { name: 'A股 (CN)', value: 'cn' },
-      { name: '港股 (HK)', value: 'hk' },
-      { name: '美股 (US)', value: 'us' },
-      { name: '英股 (UK)', value: 'uk' },
-    ],
 
     // ── Notification ──
-    subscriptionEnabled: true,
-    activeSubCount: 0,
-    activeSubLabel: '',
-    notifyFrequency: 'daily',
-    notifyFreqLabel: '每日一次',
     showNotifySheet: false,
-    notifyActions: [
-      { name: '实时推送', value: 'realtime' },
-      { name: '每日一次', value: 'daily' },
-      { name: '每周一次', value: 'weekly' },
-      { name: '关闭', value: 'off' },
-    ],
-
-    // ── About ──
-    appVersion: 'v0.1.0',
   },
 
   lifetimes: {
@@ -100,12 +93,7 @@ Component({
 
   pageLifetimes: {
     show() {
-      const subs = wx.getStorageSync('settings_subscriptions') || []
-      const activeCount = subs.filter((s: any) => s.enabled).length
-      this.setData({
-        activeSubCount: activeCount,
-        activeSubLabel: activeCount > 0 ? `${activeCount}个市场已订阅` : '未订阅',
-      })
+      this.loadSettings()
     },
   },
 
@@ -113,6 +101,12 @@ Component({
     // ============================================================
     // Login methods (preserved from original)
     // ============================================================
+    persistUserInfo(userInfo: { avatarUrl: string, nickName: string }) {
+      const hasUserInfo = !!(userInfo.nickName && userInfo.avatarUrl && userInfo.avatarUrl !== defaultAvatarUrl)
+      wx.setStorageSync('settings_userInfo', userInfo)
+      wx.setStorageSync('settings_hasUserInfo', hasUserInfo)
+      return hasUserInfo
+    },
     bindViewTap() {
       wx.switchTab({
         url: '/pages/notification/notification',
@@ -121,17 +115,21 @@ Component({
     onChooseAvatar(e: any) {
       const { avatarUrl } = e.detail
       const { nickName } = this.data.userInfo
+      const userInfo = { ...this.data.userInfo, avatarUrl }
+      const hasUserInfo = this.persistUserInfo(userInfo)
       this.setData({
         "userInfo.avatarUrl": avatarUrl,
-        hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
+        hasUserInfo: hasUserInfo || !!(nickName && avatarUrl && avatarUrl !== defaultAvatarUrl),
       })
     },
     onInputChange(e: any) {
       const nickName = e.detail.value
       const { avatarUrl } = this.data.userInfo
+      const userInfo = { ...this.data.userInfo, nickName }
+      const hasUserInfo = this.persistUserInfo(userInfo)
       this.setData({
         "userInfo.nickName": nickName,
-        hasUserInfo: nickName && avatarUrl && avatarUrl !== defaultAvatarUrl,
+        hasUserInfo: hasUserInfo || !!(nickName && avatarUrl && avatarUrl !== defaultAvatarUrl),
       })
     },
     getUserProfile() {
@@ -148,6 +146,9 @@ Component({
             userInfo: res.userInfo,
             hasUserInfo: true
           })
+          wx.setStorageSync('settings_userInfo', res.userInfo)
+          wx.setStorageSync('settings_hasUserInfo', true)
+          addLog('登录', '更新头像昵称')
         }
       })
     },
@@ -156,32 +157,14 @@ Component({
     // Settings persistence
     // ============================================================
     loadSettings() {
-      const themeMode = wx.getStorageSync('settings_themeMode') || 'system'
-      const language = wx.getStorageSync('settings_language') || 'zh-CN'
-      const defaultMarket = wx.getStorageSync('settings_defaultMarket') || 'cn'
-      const subscriptionEnabled = wx.getStorageSync('settings_subscriptionEnabled')
-      const notifyFrequency = wx.getStorageSync('settings_notifyFrequency') || 'daily'
+      const settings = getAppSettings()
+      syncRuntimeSettings(this)
 
-      // Load saved user info
       const savedUserInfo = wx.getStorageSync('settings_userInfo')
       const hasUserInfo = wx.getStorageSync('settings_hasUserInfo') || false
 
-      // Load active subscription count
-      const subs = wx.getStorageSync('settings_subscriptions') || []
-      const activeCount = subs.filter((s: any) => s.enabled).length
-
       this.setData({
-        themeMode,
-        themeLabel: THEME_MAP[themeMode] || '跟随系统',
-        language,
-        languageLabel: LANGUAGE_MAP[language] || '简体中文',
-        defaultMarket,
-        defaultMarketLabel: MARKET_MAP[defaultMarket] || 'A股',
-        subscriptionEnabled: subscriptionEnabled === '' ? true : subscriptionEnabled,
-        notifyFrequency,
-        notifyFreqLabel: NOTIFY_FREQ_MAP[notifyFrequency] || '每日一次',
-        activeSubCount: activeCount,
-        activeSubLabel: activeCount > 0 ? `${activeCount}个市场已订阅` : '未订阅',
+        ...getSettingsData(settings),
         ...(savedUserInfo ? { userInfo: savedUserInfo, hasUserInfo } : {}),
       })
     },
@@ -201,15 +184,17 @@ Component({
       this.setData({ showThemeSheet: false })
     },
     onThemeSelect(e: any) {
-      const { value } = e.detail
+      const value = e.detail.value as ThemeMode
+      const settings = setAppSetting('themeMode', value)
+      const label = getThemeLabel(value, settings.language)
       this.setData({
         themeMode: value,
-        themeLabel: THEME_MAP[value],
+        themeLabel: label,
         showThemeSheet: false,
       })
-      this.saveSettings('themeMode', value)
-      addLog('更改主题模式', `变更为: ${THEME_MAP[value]}`)
-      wx.showToast({ title: '已切换为' + THEME_MAP[value], icon: 'none', duration: 1500 })
+      this.loadSettings()
+      addLog('更改主题模式', `变更为: ${label}`)
+      wx.showToast({ title: `${getI18n(settings.language).settings.themeToast}${label}`, icon: 'none', duration: 1500 })
     },
 
     // ============================================================
@@ -222,15 +207,17 @@ Component({
       this.setData({ showLanguageSheet: false })
     },
     onLanguageSelect(e: any) {
-      const { value } = e.detail
+      const value = e.detail.value as LanguageCode
+      const settings = setAppSetting('language', value)
+      const label = getLanguageLabel(value, value)
       this.setData({
         language: value,
-        languageLabel: LANGUAGE_MAP[value],
+        languageLabel: label,
         showLanguageSheet: false,
       })
-      this.saveSettings('language', value)
-      addLog('更改首选语言', `变更为: ${LANGUAGE_MAP[value]}`)
-      wx.showToast({ title: '语言已设为' + LANGUAGE_MAP[value], icon: 'none', duration: 1500 })
+      this.loadSettings()
+      addLog('更改首选语言', `变更为: ${label}`)
+      wx.showToast({ title: `${getI18n(settings.language).settings.languageToast}${label}`, icon: 'none', duration: 1500 })
     },
 
     // ============================================================
@@ -243,15 +230,17 @@ Component({
       this.setData({ showMarketSheet: false })
     },
     onMarketSelect(e: any) {
-      const { value } = e.detail
+      const value = e.detail.value as MarketId
+      const settings = setAppSetting('defaultMarket', value)
+      const label = getMarketLabel(value, settings.language)
       this.setData({
         defaultMarket: value,
-        defaultMarketLabel: MARKET_MAP[value],
+        defaultMarketLabel: label,
         showMarketSheet: false,
       })
-      this.saveSettings('defaultMarket', value)
-      addLog('更改默认市场', `变更为: ${MARKET_MAP[value]}`)
-      wx.showToast({ title: '默认市场已设为' + MARKET_MAP[value], icon: 'none', duration: 1500 })
+      this.loadSettings()
+      addLog('更改默认市场', `变更为: ${label}`)
+      wx.showToast({ title: `${getI18n(settings.language).settings.marketToast}${label}`, icon: 'none', duration: 1500 })
     },
 
     // ============================================================
@@ -259,23 +248,29 @@ Component({
     // ============================================================
     onSubscriptionToggle(e: any) {
       const enabled = e.detail
+      const settings = setAppSetting('subscriptionEnabled', enabled)
+      const i18n = getI18n(settings.language)
       this.setData({ subscriptionEnabled: enabled })
-      this.saveSettings('subscriptionEnabled', enabled)
+      this.loadSettings()
       addLog('消息订阅服务', enabled ? '开启订阅服务' : '关闭订阅服务')
 
       if (enabled) {
-        // Request subscription message permission
+        if (SUBSCRIBE_TEMPLATE_IDS.length === 0) {
+          wx.showToast({ title: i18n.settings.localSubscriptionOn, icon: 'none' })
+          return
+        }
+
         wx.requestSubscribeMessage({
-          tmplIds: [],  // TODO: fill in actual template IDs
+          tmplIds: SUBSCRIBE_TEMPLATE_IDS,
           success: () => {
-            wx.showToast({ title: '订阅消息已开启', icon: 'none' })
+            wx.showToast({ title: i18n.settings.subscriptionOn, icon: 'none' })
           },
           fail: () => {
-            wx.showToast({ title: '订阅授权失败', icon: 'none' })
+            wx.showToast({ title: i18n.settings.subscriptionAuthFail, icon: 'none' })
           }
         })
       } else {
-        wx.showToast({ title: '订阅消息已关闭', icon: 'none' })
+        wx.showToast({ title: i18n.settings.subscriptionOff, icon: 'none' })
       }
     },
 
@@ -286,15 +281,20 @@ Component({
       this.setData({ showNotifySheet: false })
     },
     onNotifyFreqSelect(e: any) {
-      const { value } = e.detail
+      const value = e.detail.value as NotifyFrequency
+      let settings = setAppSetting('notifyFrequency', value)
+      if (value === 'off') {
+        settings = setAppSetting('subscriptionEnabled', false)
+      }
+      const label = getNotifyFrequencyLabel(value, settings.language)
       this.setData({
         notifyFrequency: value,
-        notifyFreqLabel: NOTIFY_FREQ_MAP[value],
+        notifyFreqLabel: label,
         showNotifySheet: false,
       })
-      this.saveSettings('notifyFrequency', value)
-      addLog('更改通知频率', `变更为: ${NOTIFY_FREQ_MAP[value]}`)
-      wx.showToast({ title: '通知频率已设为' + NOTIFY_FREQ_MAP[value], icon: 'none', duration: 1500 })
+      this.loadSettings()
+      addLog('更改通知频率', `变更为: ${label}`)
+      wx.showToast({ title: `${getI18n(settings.language).settings.notifyToast}${label}`, icon: 'none', duration: 1500 })
     },
 
     // ============================================================
@@ -317,9 +317,10 @@ Component({
     // Logout
     // ============================================================
     onLogout() {
+      const i18n = getI18n(getAppSettings().language)
       wx.showModal({
-        title: '提示',
-        content: '确定退出登录吗？',
+        title: i18n.settings.logoutTitle,
+        content: i18n.settings.logoutContent,
         success: (res) => {
           if (res.confirm) {
             this.setData({
@@ -329,10 +330,10 @@ Component({
               },
               hasUserInfo: false,
             })
-            this.saveSettings('userInfo', null)
+            wx.removeStorageSync('settings_userInfo')
             this.saveSettings('hasUserInfo', false)
             addLog('退出登录', '账号已注销')
-            wx.showToast({ title: '已退出登录', icon: 'none' })
+            wx.showToast({ title: i18n.settings.loggedOut, icon: 'none' })
           }
         }
       })

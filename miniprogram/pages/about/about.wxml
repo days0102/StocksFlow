@@ -1,5 +1,6 @@
 <!--about.wxml-->
-<navigation-bar title="关于我们" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<view class="app-page {{appThemeClass}} {{appLanguageClass}}" style="{{appThemeVars}}">
+<navigation-bar title="{{i18n.pages.about}}" back="{{true}}" color="{{appTheme.navTextColor}}" background="{{appTheme.navBackgroundColor}}"></navigation-bar>
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="about-page">
 
@@ -11,59 +12,47 @@
         </view>
       </view>
       <text class="app-name">StocksFlow</text>
-      <text class="app-tagline">全球股市交易时间 · 一目了然</text>
-      <text class="app-version">Version {{appVersion}}</text>
+      <text class="app-tagline">{{i18n.about.tagline}}</text>
+      <text class="app-version">{{i18n.about.version}} {{appVersion}}</text>
     </view>
 
     <!-- App Description -->
     <view class="info-card">
-      <text class="card-title">关于应用</text>
-      <text class="card-body">StocksFlow 是一款专注于全球股市交易时间追踪的工具型小程序。我们致力于为投资者提供清晰、准确的市场交易时间、假日安排及倒计时提醒，帮助您高效把握每一个交易机会。</text>
+      <text class="card-title">{{i18n.about.aboutApp}}</text>
+      <text class="card-body">{{i18n.about.description}}</text>
     </view>
 
     <!-- Features -->
     <view class="info-card">
-      <text class="card-title">核心功能</text>
+      <text class="card-title">{{i18n.about.features}}</text>
       <view class="feature-list">
-        <view class="feature-item">
+        <view class="feature-item" wx:for="{{i18n.about.featureItems}}" wx:key="*this">
           <view class="feature-dot"></view>
-          <text>全球主要市场交易时间实时显示</text>
-        </view>
-        <view class="feature-item">
-          <view class="feature-dot"></view>
-          <text>盘前 / 盘中 / 盘后状态可视化</text>
-        </view>
-        <view class="feature-item">
-          <view class="feature-dot"></view>
-          <text>市场假期日历与智能提醒</text>
-        </view>
-        <view class="feature-item">
-          <view class="feature-dot"></view>
-          <text>个性化市场偏好配置</text>
+          <text>{{item}}</text>
         </view>
       </view>
     </view>
 
     <!-- Contact -->
-    <van-cell-group title="联系我们" border="{{false}}" custom-class="contact-group">
+    <van-cell-group title="{{i18n.about.contactUs}}" border="{{false}}" custom-class="contact-group">
       <van-cell
-        title="开发团队"
+        title="{{i18n.about.team}}"
         value="StocksFlow Team"
         custom-class="contact-cell"
       >
-        <van-icon slot="icon" name="friends-o" class="cell-icon" color="#2F54EB" />
+        <van-icon slot="icon" name="friends-o" class="cell-icon" color="{{appTheme.primaryColor}}" />
       </van-cell>
       <van-cell
-        title="开源主页"
-        value="复制 GitHub 链接"
+        title="{{i18n.about.openSource}}"
+        value="{{i18n.about.copyGithub}}"
         is-link
         bindtap="copyGithubLink"
         custom-class="contact-cell"
       >
-        <van-icon slot="icon" name="cluster-o" class="cell-icon" color="#333333" />
+        <van-icon slot="icon" name="cluster-o" class="cell-icon" color="{{appTheme.textMainColor}}" />
       </van-cell>
       <van-cell
-        title="技术支持"
+        title="{{i18n.about.support}}"
         title-width="160rpx"
         center
         custom-class="contact-cell"
@@ -83,3 +72,4 @@
 
   </view>
 </scroll-view>
+</view>

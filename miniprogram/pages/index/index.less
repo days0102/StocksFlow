@@ -1,23 +1,26 @@
 /**index.less**/
 
 // ── Design Tokens (consistent with market.less) ──
-@bg-color: #F5F6F8;
-@surface-color: #FFFFFF;
-@primary-color: #2F54EB;
-@text-main: #1A1D24;
-@text-secondary: #8C92A4;
-@border-color: #EBF0F5;
+@bg-color: var(--app-bg-color, #F5F6F8);
+@surface-color: var(--app-surface-color, #FFFFFF);
+@primary-color: var(--app-primary-color, #2F54EB);
+@text-main: var(--app-text-main-color, #1A1D24);
+@text-secondary: var(--app-text-secondary-color, #8C92A4);
+@border-color: var(--app-border-color, #EBF0F5);
 
 page {
   height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: @bg-color;
+  color: @text-main;
+  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
 }
 
 .scrollarea {
   flex: 1;
   overflow-y: hidden;
+  background-color: @bg-color;
 }
 
 .page-content {
@@ -105,9 +108,10 @@ page {
   width: 100%;
   padding: 16px;
   box-sizing: border-box;
-  border-top: .5px solid rgba(0, 0, 0, 0.1);
-  border-bottom: .5px solid rgba(0, 0, 0, 0.1);
-  color: black;
+  border-top: .5px solid @border-color;
+  border-bottom: .5px solid @border-color;
+  color: @text-main;
+  background-color: @surface-color;
 }
 
 .nickname-label {
@@ -152,10 +156,10 @@ page {
   font-size: 28rpx;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #2F54EB, #597EF7);
+  background: linear-gradient(135deg, var(--app-button-color, #2F54EB), @primary-color);
   border-radius: 40rpx;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(47, 84, 235, 0.3);
+  box-shadow: 0 8rpx 24rpx var(--app-shadow-color, rgba(47, 84, 235, 0.3));
 
   &::after {
     border: none;
@@ -189,14 +193,46 @@ page {
 // Settings Groups
 // ==========================================
 .settings-group {
+  --cell-background-color: @surface-color;
+  --cell-text-color: @text-main;
+  --cell-value-color: @text-secondary;
+  --cell-border-color: @border-color;
+  --cell-group-background-color: @surface-color;
+  --cell-group-title-color: @text-secondary;
+  --settings-separator-color: @border-color;
   margin: 0 24rpx 20rpx;
   border-radius: 24rpx !important;
   overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  border: 1rpx solid rgba(235, 240, 245, 0.7);
+  box-shadow: 0 4rpx 16rpx var(--app-shadow-color, rgba(0, 0, 0, 0.02));
 }
 
 .settings-cell {
   font-size: 28rpx;
+  color: @text-main;
+  background-color: @surface-color;
+}
+
+.settings-cell::after {
+  border-bottom-color: var(--settings-separator-color, @border-color) !important;
+  opacity: 0.8;
+}
+
+.theme-dark {
+  .settings-group {
+    --settings-separator-color: rgba(148, 163, 184, 0.12);
+    border-color: rgba(148, 163, 184, 0.08);
+    box-shadow: 0 10rpx 28rpx rgba(0, 0, 0, 0.18);
+  }
+
+  .settings-cell::after {
+    border-bottom-color: rgba(148, 163, 184, 0.12) !important;
+    opacity: 1;
+  }
+
+  .settings-cell:active {
+    background-color: rgba(124, 156, 255, 0.08);
+  }
 }
 
 .cell-icon {
@@ -219,7 +255,7 @@ page {
   color: #FF4D4F;
   background-color: @surface-color;
   border-radius: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4rpx 16rpx var(--app-shadow-color, rgba(0, 0, 0, 0.02));
   transition: background-color 0.2s ease;
 
   &:active {

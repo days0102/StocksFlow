@@ -12,8 +12,11 @@
     "navigationBarTextStyle": "black",
     "navigationStyle": "custom"
   },
+  "darkmode": true,
   "tabBar": {
-    "selectedColor": "#3f72af",
+    "color": "#8C92A4",
+    "selectedColor": "#2F54EB",
+    "backgroundColor": "#FFFFFF",
     "list": [
       {
         "pagePath": "pages/market/market",

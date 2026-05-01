@@ -23,3 +23,82 @@
   padding: 200rpx 0;
   box-sizing: border-box;
 }
+
+page {
+  background-color: var(--app-bg-color, #F5F6F8);
+  color: var(--app-text-main-color, #1A1D24);
+  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
+}
+
+.app-page {
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--app-bg-color, #F5F6F8);
+  color: var(--app-text-main-color, #1A1D24);
+  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
+}
+
+.app-page .van-cell::after,
+.app-page .van-hairline--bottom::after,
+.app-page .van-hairline--top::after,
+.app-page .van-hairline--surround::after {
+  border-color: var(--app-border-color, #EBF0F5) !important;
+}
+
+.app-page.theme-dark .van-cell::after,
+.app-page.theme-dark .van-hairline--bottom::after,
+.app-page.theme-dark .van-hairline--top::after,
+.app-page.theme-dark .van-hairline--surround::after {
+  border-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+.app-action-sheet {
+  background-color: var(--app-surface-color, #FFFFFF) !important;
+  color: var(--app-text-main-color, #1A1D24) !important;
+  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
+}
+
+.app-action-sheet .van-action-sheet__header,
+.app-action-sheet .van-action-sheet__item,
+.app-action-sheet .van-action-sheet__cancel {
+  background-color: var(--app-surface-color, #FFFFFF) !important;
+  color: var(--app-text-main-color, #1A1D24) !important;
+}
+
+.app-action-sheet .van-action-sheet__subname,
+.app-action-sheet .van-action-sheet__description {
+  color: var(--app-text-secondary-color, #8C92A4) !important;
+}
+
+.app-action-sheet .van-action-sheet__gap {
+  background-color: var(--app-bg-color, #F5F6F8) !important;
+}
+
+.app-action-sheet .van-action-sheet__item--hover,
+.app-action-sheet .van-action-sheet__cancel--hover {
+  background-color: var(--app-primary-light-color, #EAF0FF) !important;
+}
+
+.app-action-sheet.theme-dark,
+.app-action-sheet.theme-dark .van-action-sheet__header,
+.app-action-sheet.theme-dark .van-action-sheet__item,
+.app-action-sheet.theme-dark .van-action-sheet__cancel {
+  background-color: #172033 !important;
+  color: #F8FAFC !important;
+}
+
+.app-action-sheet.theme-dark .van-action-sheet__subname,
+.app-action-sheet.theme-dark .van-action-sheet__description {
+  color: #CBD5E1 !important;
+}
+
+.app-action-sheet.theme-dark .van-action-sheet__gap {
+  background-color: #0F172A !important;
+}
+
+.app-action-sheet.theme-dark .van-action-sheet__item--hover,
+.app-action-sheet.theme-dark .van-action-sheet__cancel--hover {
+  background-color: #1B2B5F !important;
+}

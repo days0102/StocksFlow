@@ -1,5 +1,5 @@
 .weui-navigation-bar {
-  --weui-FG-0:rgba(0,0,0,.9);
+  --weui-FG-0: var(--app-text-main-color, rgba(0,0,0,.9));
   --height: 44px;
   --left: 16px;
 }
@@ -10,6 +10,7 @@
 .weui-navigation-bar {
   overflow: hidden;
   color: var(--weui-FG-0);
+  background-color: var(--app-surface-color, #FFFFFF);
   flex: none;
 }
 
@@ -25,6 +26,7 @@
   padding-top: env(safe-area-inset-top);
   width: 100%;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .weui-navigation-bar__left {
@@ -68,6 +70,8 @@
   font-weight: bold;
   flex: 1;
   height: 100%;
+  color: inherit;
+  font-family: inherit;
 }
 
 .weui-navigation-bar__loading {

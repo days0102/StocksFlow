@@ -1,11 +1,12 @@
-<navigation-bar title="市场日历" back="{{false}}"></navigation-bar>
+<view class="app-page {{appThemeClass}} {{appLanguageClass}}" style="{{appThemeVars}}">
+<navigation-bar title="{{i18n.pages.calendar}}" back="{{false}}" color="{{appTheme.navTextColor}}" background="{{appTheme.navBackgroundColor}}"></navigation-bar>
 
 <view class="header-section">
     <view class="calendar-sheet">
       <view class="sheet-header">
         <view class="title-area">
-          <text class="title">{{currentMarket.symbol}} 交易日历</text>
-          <text class="subtitle">当地时间</text>
+          <text class="title">{{currentMarket.symbol}} {{i18n.market.tradingCalendar}}</text>
+          <text class="subtitle">{{i18n.common.localTime}}</text>
         </view>
       </view>
 
@@ -23,9 +24,10 @@
       </view>
 
       <view class="sheet-legend">
-        <view class="legend-item"><view class="dot status-open"></view>正常交易</view>
-        <view class="legend-item"><view class="dot status-closed"></view>周末休市</view>
-        <view class="legend-item"><view class="dot status-holiday"></view>法定假日</view>
+        <view class="legend-item"><view class="dot status-open"></view>{{i18n.market.normalTrading}}</view>
+        <view class="legend-item"><view class="dot status-closed"></view>{{i18n.market.weekendClosed}}</view>
+        <view class="legend-item"><view class="dot status-holiday"></view>{{i18n.market.holidayClosed}}</view>
       </view>
     </view>
+</view>
 </view>

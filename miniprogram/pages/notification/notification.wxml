@@ -1,5 +1,6 @@
 <!--notification.wxml-->
-<navigation-bar title="通知" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<view class="app-page {{appThemeClass}} {{appLanguageClass}}" style="{{appThemeVars}}">
+<navigation-bar title="{{i18n.pages.notification}}" back="{{false}}" color="{{appTheme.navTextColor}}" background="{{appTheme.navBackgroundColor}}"></navigation-bar>
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="page-content">
 
@@ -9,14 +10,14 @@
         <text class="banner-icon">🔔</text>
       </view>
       <view class="banner-body">
-        <text class="banner-title">开启通知，不再错过交易机会</text>
-        <text class="banner-desc">订阅市场开盘提醒，在选定的时间接收通知。每次授权仅对单次消息有效，建议保持关注。</text>
+        <text class="banner-title">{{i18n.notification.bannerTitle}}</text>
+        <text class="banner-desc">{{i18n.notification.bannerDesc}}</text>
       </view>
     </view>
 
     <!-- ====== Market Subscriptions ====== -->
-    <van-cell-group title="市场订阅" border="{{false}}" custom-class="section-group">
-      <view class="section-desc">选择需要接收通知的市场，并设定提醒时机</view>
+    <van-cell-group title="{{i18n.notification.marketSubscriptions}}" border="{{false}}" custom-class="section-group">
+      <view class="section-desc">{{subscriptionEnabled ? i18n.notification.subscriptionDesc : i18n.notification.disabledHint}}</view>
 
       <view
         class="subscription-item"
@@ -27,21 +28,22 @@
         <view class="sub-info">
           <view class="sub-header">
             <text class="sub-name">{{item.marketName}}</text>
-            <text class="sub-open-time">开盘 {{item.openTime}} CST</text>
+            <text class="sub-open-time">{{i18n.notification.openAt}} {{item.openTime}} CST</text>
           </view>
           <view
             class="sub-timing-row"
             bindtap="showTimingPicker"
             data-index="{{index}}"
           >
-            <text class="sub-timing-label">提醒时机：{{item.timingLabel}}</text>
-            <van-icon name="arrow-down" size="10px" color="#8C92A4" />
+            <text class="sub-timing-label">{{i18n.notification.timing}}{{item.timingLabel}}</text>
+            <van-icon name="arrow-down" size="10px" color="{{appTheme.textSecondaryColor}}" />
           </view>
         </view>
         <van-switch
           size="22px"
           checked="{{item.enabled}}"
-          active-color="#2F54EB"
+          disabled="{{!subscriptionEnabled}}"
+          active-color="{{appTheme.switchActiveColor}}"
           bind:change="onMarketToggle"
           data-index="{{index}}"
         />
@@ -49,14 +51,14 @@
 
       <view class="authorize-row" wx:if="{{tmplIds.length > 0}}">
         <view class="authorize-btn" bindtap="onAuthorizeAll">
-          <text>一键授权订阅消息</text>
+          <text>{{i18n.notification.authorizeAll}}</text>
         </view>
       </view>
     </van-cell-group>
 
     <!-- ====== Notification Messages ====== -->
-    <van-cell-group title="通知记录" border="{{false}}" custom-class="section-group">
-      <view class="section-desc">最近的交易提醒和系统通知</view>
+    <van-cell-group title="{{i18n.notification.records}}" border="{{false}}" custom-class="section-group">
+      <view class="section-desc">{{i18n.notification.recordsDesc}}</view>
 
       <block wx:if="{{notifyMessages.length > 0}}">
         <view
@@ -82,14 +84,14 @@
 
       <view class="empty-state" wx:else>
         <text class="empty-icon">📭</text>
-        <text class="empty-text">暂无通知记录</text>
-        <text class="empty-hint">开启市场订阅后，通知将显示在这里</text>
+        <text class="empty-text">{{i18n.notification.empty}}</text>
+        <text class="empty-hint">{{i18n.notification.emptyHint}}</text>
       </view>
     </van-cell-group>
 
     <!-- ====== Footer ====== -->
     <view class="footer-note">
-      <text>提示：微信订阅消息需每次手动触发授权，您开启订阅后我们会记录偏好，但实际发送需要您点击授权。模板ID请在微信小程序后台「功能 > 订阅消息」中配置。</text>
+      <text>{{i18n.notification.footer}}</text>
     </view>
 
   </view>
@@ -97,10 +99,13 @@
 
 <!-- ====== Timing Action Sheet ====== -->
 <van-action-sheet
+  custom-class="app-action-sheet {{appThemeClass}}"
+  list-class="app-action-sheet-list"
   show="{{showTimingSheet}}"
   actions="{{timingOptions}}"
-  cancel-text="取消"
+  cancel-text="{{i18n.common.cancel}}"
   bind:close="onTimingSheetClose"
   bind:cancel="onTimingSheetClose"
   bind:select="onTimingSelect"
 />
+</view>

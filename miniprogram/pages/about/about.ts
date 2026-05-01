@@ -1,8 +1,21 @@
 // about.ts
+import { APP_VERSION, createRuntimeData, getAppSettings, getI18n, syncRuntimeSettings } from '../../utils/settings'
+
 Component({
   data: {
-    appVersion: 'v0.1.0',
+    ...createRuntimeData(),
+    appVersion: APP_VERSION,
     githubLink: 'https://github.com/days0102/StocksFlow',
+  },
+  lifetimes: {
+    attached() {
+      syncRuntimeSettings(this)
+    },
+  },
+  pageLifetimes: {
+    show() {
+      syncRuntimeSettings(this)
+    },
   },
   methods: {
     copyGithubLink() {
@@ -10,7 +23,7 @@ Component({
         data: this.data.githubLink,
         success() {
           wx.showToast({
-            title: '链接已复制',
+            title: getI18n(getAppSettings().language).common.copied,
             icon: 'success'
           })
         }
