@@ -1,9 +1,14 @@
 // app.ts
 import { addLog } from './utils/util'
+import { applyRuntimeSettings, getAppSettings } from './utils/settings'
 
 App<IAppOption>({
   globalData: {},
   onLaunch() {
+    const runtimeData = applyRuntimeSettings({ updatePages: false })
+    this.globalData.settings = runtimeData.appSettings
+    this.globalData.runtimeData = runtimeData
+
     let logs = wx.getStorageSync('logs') || []
     if (logs.length > 0 && typeof logs[0] === 'number') {
       logs = logs.map((time: number) => ({ time, action: '应用启动', detail: 'App Launch' }))
@@ -18,5 +23,17 @@ App<IAppOption>({
         // 发送 res.code 到后台换取 openId, sessionKey, unionId
       },
     })
+  },
+  onShow() {
+    const runtimeData = applyRuntimeSettings()
+    this.globalData.settings = runtimeData.appSettings
+    this.globalData.runtimeData = runtimeData
+  },
+  onThemeChange() {
+    if (getAppSettings().themeMode !== 'system') return
+
+    const runtimeData = applyRuntimeSettings()
+    this.globalData.settings = runtimeData.appSettings
+    this.globalData.runtimeData = runtimeData
   },
 })

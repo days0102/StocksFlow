@@ -1,22 +1,25 @@
 /**about.less**/
 
-@bg-color: #F5F6F8;
-@surface-color: #FFFFFF;
-@primary-color: #2F54EB;
-@text-main: #1A1D24;
-@text-secondary: #8C92A4;
-@border-color: #EBF0F5;
+@bg-color: var(--app-bg-color, #F5F6F8);
+@surface-color: var(--app-surface-color, #FFFFFF);
+@primary-color: var(--app-primary-color, #2F54EB);
+@text-main: var(--app-text-main-color, #1A1D24);
+@text-secondary: var(--app-text-secondary-color, #8C92A4);
+@border-color: var(--app-border-color, #EBF0F5);
 
 page {
   height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: @bg-color;
+  color: @text-main;
+  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
 }
 
 .scrollarea {
   flex: 1;
   overflow-y: hidden;
+  background-color: @bg-color;
 }
 
 .about-page {
@@ -31,7 +34,7 @@ page {
   flex-direction: column;
   align-items: center;
   padding: 72rpx 40rpx 56rpx;
-  background: linear-gradient(180deg, rgba(47, 84, 235, 0.06) 0%, transparent 100%);
+  background: var(--app-page-gradient, linear-gradient(180deg, rgba(47, 84, 235, 0.06) 0%, transparent 100%));
 }
 
 .logo-wrap {
@@ -42,11 +45,11 @@ page {
   width: 128rpx;
   height: 128rpx;
   border-radius: 32rpx;
-  background: linear-gradient(135deg, #2F54EB 0%, #597EF7 100%);
+  background: linear-gradient(135deg, var(--app-button-color, #2F54EB) 0%, @primary-color 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 32rpx rgba(47, 84, 235, 0.3);
+  box-shadow: 0 12rpx 32rpx var(--app-shadow-color, rgba(47, 84, 235, 0.3));
 }
 
 .logo-text {
@@ -72,7 +75,7 @@ page {
 .app-version {
   font-size: 24rpx;
   color: @text-secondary;
-  background-color: rgba(47, 84, 235, 0.08);
+  background-color: var(--app-primary-light-color, rgba(47, 84, 235, 0.08));
   padding: 6rpx 20rpx;
   border-radius: 20rpx;
 }
@@ -85,7 +88,7 @@ page {
   padding: 36rpx 36rpx;
   background-color: @surface-color;
   border-radius: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4rpx 16rpx var(--app-shadow-color, rgba(0, 0, 0, 0.02));
 }
 
 .card-title {
@@ -141,10 +144,16 @@ page {
 // Contact Group
 // ==========================================
 .contact-group {
+  --cell-background-color: @surface-color;
+  --cell-text-color: @text-main;
+  --cell-value-color: @text-secondary;
+  --cell-border-color: @border-color;
+  --cell-group-background-color: @surface-color;
+  --cell-group-title-color: @text-secondary;
   margin: 0 24rpx 20rpx;
   border-radius: 24rpx !important;
   overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4rpx 16rpx var(--app-shadow-color, rgba(0, 0, 0, 0.02));
 }
 
 .contact-cell {

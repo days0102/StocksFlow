@@ -1,4 +1,5 @@
-<navigation-bar title="市场日历" back="{{false}}"></navigation-bar>
+<view class="app-page {{appThemeClass}} {{appLanguageClass}}" style="{{appThemeVars}}">
+<navigation-bar title="{{i18n.pages.market}}" back="{{false}}" color="{{appTheme.navTextColor}}" background="{{appTheme.navBackgroundColor}}"></navigation-bar>
 
 <view class="header-section">
   <!-- Market selector that scrolls horizontally -->
@@ -33,14 +34,14 @@
   <view class="hero-section">
     <view class="status-pill {{isMarketOpen ? 'open' : 'closed'}}">
       <view class="dot"></view>
-      <text>{{isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}}</text>
+      <text>{{isMarketOpen ? i18n.market.open : i18n.market.closed}}</text>
     </view>
 
     <view class="countdown-timer">
       <text class="time-text">{{countdownStr}}</text>
     </view>
 
-    <text class="helper-text">{{isMarketOpen ? '距离收盘' : '距离开盘'}}</text>
+    <text class="helper-text">{{isMarketOpen ? i18n.market.untilClose : i18n.market.untilOpen}}</text>
   </view>
   
   <view class="timeline-section">
@@ -87,8 +88,8 @@
   <!-- Secondary message 1: Today's timetable -->
   <view class="schedule-section">
     <view class="section-header">
-      <text class="title">{{currentMarket.symbol}} 今日时间表</text>
-      <text class="more-link" style="color: #8C92A4; font-weight: 400;">当地时间 {{currentMarket.tzLabel}}</text>
+      <text class="title">{{currentMarket.symbol}} {{i18n.market.todaySchedule}}</text>
+      <text class="more-link" style="color: {{appTheme.textSecondaryColor}}; font-weight: 400;">{{i18n.common.localTime}} {{currentMarket.tzLabel}}</text>
     </view>
 
     <view class="schedule-card">
@@ -109,8 +110,8 @@
   <!-- Secondary message 2: The upcoming holidays -->
   <view class="holiday-section">
     <view class="section-header">
-      <text class="title">即将到来的假期</text>
-      <text class="more-link" bindtap="onTapAllHolidays">查看完整日历</text>
+      <text class="title">{{i18n.market.upcomingHolidays}}</text>
+      <text class="more-link" bindtap="onTapAllHolidays">{{i18n.market.fullCalendar}}</text>
     </view>
 
     <scroll-view 
@@ -148,8 +149,8 @@
     <view class="calendar-sheet">
       <view class="sheet-header">
         <view class="title-area">
-          <text class="title">{{currentMarket.symbol}} 交易日历</text>
-          <text class="subtitle">当地时间</text>
+          <text class="title">{{currentMarket.symbol}} {{i18n.market.tradingCalendar}}</text>
+          <text class="subtitle">{{i18n.common.localTime}}</text>
         </view>
         <view class="close-btn" bindtap="closeCalendar">
           <view class="close-icon"></view>
@@ -170,10 +171,11 @@
       </view>
 
       <view class="sheet-legend">
-        <view class="legend-item"><view class="dot status-open"></view>正常交易</view>
-        <view class="legend-item"><view class="dot status-closed"></view>周末休市</view>
-        <view class="legend-item"><view class="dot status-holiday"></view>法定假日</view>
+        <view class="legend-item"><view class="dot status-open"></view>{{i18n.market.normalTrading}}</view>
+        <view class="legend-item"><view class="dot status-closed"></view>{{i18n.market.weekendClosed}}</view>
+        <view class="legend-item"><view class="dot status-holiday"></view>{{i18n.market.holidayClosed}}</view>
       </view>
     </view>
   </page-container>
+</view>
 </view>

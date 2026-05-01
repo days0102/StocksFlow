@@ -1,20 +1,50 @@
 // feedback.ts
+import { addLog } from '../../utils/util'
+import { createRuntimeData, getAppSettings, getI18n, syncRuntimeSettings } from '../../utils/settings'
+
+const CATEGORY_META = [
+  { value: 'feature', icon: '💡' },
+  { value: 'bug', icon: '🐛' },
+  { value: 'ui', icon: '🎨' },
+  { value: 'data', icon: '📊' },
+  { value: 'other', icon: '💬' },
+]
+
+function buildCategories() {
+  const labels = getI18n(getAppSettings().language).feedback.categories
+  return CATEGORY_META.map(category => ({
+    ...category,
+    label: labels[category.value as keyof typeof labels],
+  }))
+}
+
 Component({
   data: {
-    categories: [
-      { label: '功能建议', value: 'feature', icon: '💡' },
-      { label: 'Bug 报告', value: 'bug', icon: '🐛' },
-      { label: '界面优化', value: 'ui', icon: '🎨' },
-      { label: '数据问题', value: 'data', icon: '📊' },
-      { label: '其他', value: 'other', icon: '💬' },
-    ],
+    ...createRuntimeData(),
+    categories: buildCategories(),
     selectedCategory: '',
     content: '',
     contact: '',
     canSubmit: false,
   },
 
+  lifetimes: {
+    attached() {
+      this.refreshRuntime()
+    },
+  },
+  pageLifetimes: {
+    show() {
+      this.refreshRuntime()
+    },
+  },
+
   methods: {
+    refreshRuntime() {
+      syncRuntimeSettings(this)
+      this.setData({ categories: buildCategories() })
+    },
+
     onSelectCategory(e: WechatMiniprogram.TouchEvent) {
       const { value } = e.currentTarget.dataset
       this.setData({ selectedCategory: value })
@@ -42,11 +72,19 @@ Component({
 
       const { selectedCategory, content, contact } = this.data
 
-      // TODO: Send to backend API
-      console.log('Feedback submitted:', { selectedCategory, content, contact })
+      const submissions = wx.getStorageSync('feedback_submissions') || []
+      submissions.unshift({
+        id: Date.now(),
+        selectedCategory,
+        content,
+        contact,
+        createdAt: Date.now(),
+      })
+      wx.setStorageSync('feedback_submissions', submissions.slice(0, 50))
+      addLog('提交意见反馈', buildCategories().find(item => item.value === selectedCategory)?.label || selectedCategory)
 
       wx.showToast({
-        title: '反馈已提交，感谢您！',
+        title: getI18n(getAppSettings().language).feedback.submitted,
         icon: 'none',
         duration: 2000,
       })
