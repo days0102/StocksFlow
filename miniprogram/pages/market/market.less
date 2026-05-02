@@ -227,16 +227,44 @@ page {
   margin-bottom: 32rpx;
 }
 
-.timeline-labels {
+.timeline-labels-exact {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   margin-bottom: 24rpx;
   padding: 0 16rpx;
+  height: 28rpx;
 
-  .time-label {
+  .start-time {
+    position: absolute;
+    left: 16rpx;
+    top: 0;
     font-size: 20rpx;
     color: @text-secondary;
     font-family: 'DIN Alternate', monospace;
+  }
+
+  .end-times-track {
+    display: flex;
+    width: 100%;
+
+    .time-slot-box {
+      height: 100%;
+      position: relative;
+
+      .end-time {
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 20rpx;
+        color: @text-secondary;
+        font-family: 'DIN Alternate', monospace;
+        transform: translateX(50%);
+      }
+
+      &:last-child .end-time {
+        transform: translateX(0);
+      }
+    }
   }
 }
 
@@ -250,24 +278,32 @@ page {
   border-radius: 6rpx;
   display: flex;
   overflow: hidden;
-  background-color: @border-color;
+  background-color: #F0F2F5;
 }
 
 .slot-segment {
   height: 100%;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 
   &.pre,
   &.post {
-    background-color: @timeline-pending;
+    background-color: rgba(47, 84, 235, 0.05);
   }
 
   &.normal {
-    background-color: @timeline-normal;
+    background-color: rgba(47, 85, 235, 0.4);
   }
 
-  &.inactive {
-    opacity: 0.4;
+  &.active {
+
+    &.pre,
+    &.post {
+      background-color: rgba(47, 84, 235, 0.5);
+    }
+
+    &.normal {
+      background-color: @primary-color;
+    }
   }
 }
 

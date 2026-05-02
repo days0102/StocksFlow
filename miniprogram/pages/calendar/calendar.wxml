@@ -1,33 +1,81 @@
 <view class="app-page {{appThemeClass}} {{appLanguageClass}}" style="{{appThemeVars}}">
-<navigation-bar title="{{i18n.pages.calendar}}" back="{{false}}" color="{{appTheme.navTextColor}}" background="{{appTheme.navBackgroundColor}}"></navigation-bar>
+  <navigation-bar
+    title="{{i18n.pages.calendar}}"
+    back="{{false}}"
+    color="{{appTheme.navTextColor}}"
+    background="{{appTheme.navBackgroundColor}}"
+  ></navigation-bar>
 
-<view class="header-section">
+  <view class="header-section">
+    <scroll-view
+      class="market-scroll"
+      scroll-x
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <view class="market-tabs">
+        <block wx:for="{{marketList}}" wx:key="id">
+          <view
+            class="tab-item {{currentMarketId === item.id ? 'active' : ''}}"
+            bindtap="onSwitchMarket"
+            data-id="{{item.id}}"
+          >
+            <text class="symbol">{{item.symbol}}</text>
+            <text class="name">{{item.name}}</text>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+
+    <view class="time-status">
+      <text class="tz-label">{{currentMarket.tzLabel}}</text>
+      <text class="clock">{{currentMarket.symbol}} {{i18n.market.tradingCalendar}}</text>
+    </view>
+  </view>
+
+  <view class="content-body">
     <view class="calendar-sheet">
       <view class="sheet-header">
         <view class="title-area">
-          <text class="title">{{currentMarket.symbol}} {{i18n.market.tradingCalendar}}</text>
+          <text class="title">{{currentMarket.name}}</text>
           <text class="subtitle">{{i18n.common.localTime}}</text>
         </view>
       </view>
 
       <view class="calendar-wrap">
-        <van-calendar 
-          class="custom-vant-calendar"
-          poppable="{{ false }}"
-          show-title="{{ false }}"
-          show-subtitle="{{ true }}"
-          show-confirm="{{ false }}"
-          min-date="{{ minDate }}"
-          max-date="{{ maxDate }}"
-          formatter="{{ dayFormatter }}"
-        />
+        <block wx:if="{{!isLoadingHolidays}}">
+          <van-calendar
+            class="custom-vant-calendar"
+            poppable="{{ false }}"
+            show-title="{{ false }}"
+            show-subtitle="{{ true }}"
+            show-confirm="{{ false }}"
+            min-date="{{ minDate }}"
+            max-date="{{ maxDate }}"
+            formatter="{{ dayFormatter }}"
+          />
+        </block>
+        <block wx:else>
+          <view class="loading-state">
+            <text>同步日历数据中...</text>
+          </view>
+        </block>
       </view>
 
       <view class="sheet-legend">
-        <view class="legend-item"><view class="dot status-open"></view>{{i18n.market.normalTrading}}</view>
-        <view class="legend-item"><view class="dot status-closed"></view>{{i18n.market.weekendClosed}}</view>
-        <view class="legend-item"><view class="dot status-holiday"></view>{{i18n.market.holidayClosed}}</view>
+        <view class="legend-item">
+          <view class="dot status-open"></view>
+          {{i18n.market.normalTrading}}
+        </view>
+        <view class="legend-item">
+          <view class="dot status-closed"></view>
+          {{i18n.market.weekendClosed}}
+        </view>
+        <view class="legend-item">
+          <view class="dot status-holiday"></view>
+          {{i18n.market.holidayClosed}}
+        </view>
       </view>
     </view>
-</view>
+  </view>
 </view>

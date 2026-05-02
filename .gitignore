@@ -5,6 +5,7 @@ node_modules/
 miniprogram/miniprogram_npm/
 dist/
 
+.env
 project.private.config.json
 
 # Temporary files saved by commit-msg hook on validation failure
