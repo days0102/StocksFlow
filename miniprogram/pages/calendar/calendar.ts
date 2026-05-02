@@ -1,60 +1,38 @@
+import { MARKET_DATA } from '../../config/markets'
+import { MarketService } from '../../services/marketService'
+import type { ICalendarDay, IMarket, IMarketHolidayItem, IHolidayRange } from '../../types/market'
 import {
   MarketId,
   createRuntimeData,
   getAppSettings,
-  getI18n,
   getMarketLabel,
   syncRuntimeSettings,
 } from '../../utils/settings'
 
-interface IMarket {
-  id: MarketId,
-  symbol: string;
-  name: string;
-  tzLabel: string;
-  ianaZone: string; // IANA time zone identifier
+const padZero = (value: number) => value.toString().padStart(2, '0')
+
+const formatDateKey = (date: Date) =>
+  `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`
+
+const buildCalendarRange = (baseDate: Date): IHolidayRange => {
+  const startDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1)
+  const endDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 3, 0)
+
+  return {
+    from: formatDateKey(startDate),
+    to: formatDateKey(endDate),
+    minDate: startDate.getTime(),
+    maxDate: endDate.getTime(),
+  }
 }
 
-interface ITimeSlot {
-  label: string;      // Display name, such as "Pre-Market Trading"
-  startStr: string;   // Start time "04:00"
-  endStr: string;     // End time "09:30"
-  startSec: number;   // The number of seconds of the day at the start time
-  endSec: number;     // The number of seconds of the day at the end time
-  duration: number;   // Lasts seconds
-  colorType: SlotType;  // Style type：pre | normal | post
-  widthPct: number;   // The percentage of width in the progress bar
+const parseDateKey = (dateKey: string) => {
+  const [year, month, day] = dateKey.split('-').map(item => parseInt(item, 10))
+  return new Date(year, month - 1, day)
 }
 
-interface IHoliday {
-  id: string;
-  name: string;
-  dateStr: string;
-  statusText: string;
-}
-
-const MARKET_DATA: IMarket[] = [
-  { id: 'cn', symbol: 'CN', name: 'A股', tzLabel: 'CST', ianaZone: 'Asia/Shanghai' },
-  { id: 'hk', symbol: 'HK', name: '港股', tzLabel: 'HKT', ianaZone: 'Asia/Hong_Kong' },
-  { id: 'us', symbol: 'US', name: '美股', tzLabel: 'EST', ianaZone: 'America/New_York' },
-  { id: 'uk', symbol: 'UK', name: '英股', tzLabel: 'GMT', ianaZone: 'Europe/London' },
-]
-
-type SlotType = 'pre' | 'normal' | 'post'
-
-const RAW_SLOTS = [
-  { startStr: '04:00', endStr: '09:30', colorType: 'pre' as SlotType },
-  { startStr: '09:30', endStr: '16:00', colorType: 'normal' as SlotType },
-  { startStr: '16:00', endStr: '20:00', colorType: 'post' as SlotType }
-]
-
-const MOCK_HOLIDAYS: IHoliday[] = [
-  { id: 'h1', name: 'Memorial Day', dateStr: 'May 25, 2026', statusText: 'Market Closed' },
-  { id: 'h2', name: 'Juneteenth', dateStr: 'Jun 19, 2026', statusText: 'Market Closed' },
-  { id: 'h3', name: 'Independence Day', dateStr: 'Jul 3, 2026', statusText: 'Early Close' },
-]
-
-let timer: number | null = null;
+const formatHolidayBottomInfo = (holiday: IMarketHolidayItem) =>
+  holiday.isClosed ? '休市' : '调整'
 
 function buildMarketData() {
   const language = getAppSettings().language
@@ -78,17 +56,10 @@ Component({
   data: {
     ...createRuntimeData(),
     ...getInitialMarketData(),
-    localTimeStr: '00:00:00',
-
-    isMarketOpen: false,
-    countdownStr: '00:00:00',
-
-    timelineSlots: [] as ITimeSlot[],
-    pinPositionPct: 0,
-    pinLabel: 'NOW',
-    currentSlotIndex: -1,
-
-    upcomingHolidays: MOCK_HOLIDAYS,
+    isLoadingHolidays: true,
+    minDate: buildCalendarRange(new Date()).minDate,
+    maxDate: buildCalendarRange(new Date()).maxDate,
+    dayFormatter: null as any,
   },
 
   methods: {
@@ -96,190 +67,112 @@ Component({
       syncRuntimeSettings(this)
       const marketList = buildMarketData()
       const currentMarketId = getAppSettings().defaultMarket
-      const currentMarket = marketList.find((m: IMarket) => m.id === currentMarketId) || marketList[0]
-      this.setData({
-        marketList,
-        currentMarketId,
-        currentMarket,
-      }, () => {
-        this.initTimeline()
-        this.updateLocalTime()
-      })
+      const currentMarket =
+        marketList.find((market: IMarket) => market.id === currentMarketId) || marketList[0]
+
+      this.setData(
+        {
+          marketList,
+          currentMarketId,
+          currentMarket,
+          isLoadingHolidays: true,
+          dayFormatter: null,
+        },
+        () => {
+          void this.loadMarketHolidays(currentMarket.exchange)
+        },
+      )
     },
 
     onSwitchMarket(e: WechatMiniprogram.TouchEvent) {
-      const id = e.currentTarget.dataset.id as MarketId;
-      if (id === this.data.currentMarketId) return;
+      const id = e.currentTarget.dataset.id as MarketId
+      if (id === this.data.currentMarketId) return
 
-      const targetMarket = this.data.marketList.find((m: IMarket) => m.id === id);
-      if (targetMarket) {
-        // Updates the currently selected market and triggers a time refresh immediately
-        this.setData({
+      const targetMarket = this.data.marketList.find((market: IMarket) => market.id === id)
+      if (!targetMarket) return
+
+      this.setData(
+        {
           currentMarketId: id,
-          currentMarket: targetMarket
-        }, () => {
-          this.updateLocalTime();
-        });
-      }
+          currentMarket: targetMarket,
+          isLoadingHolidays: true,
+          dayFormatter: null,
+        },
+        () => {
+          void this.loadMarketHolidays(targetMarket.exchange)
+        },
+      )
     },
 
-    updateLocalTime() {
-      const { currentMarket } = this.data;
-      if (!currentMarket) return;
+    async loadMarketHolidays(exchange: string) {
+      const { minDate, maxDate } = this.data
+      const rangeFrom = formatDateKey(new Date(minDate))
+      const rangeTo = formatDateKey(new Date(maxDate))
 
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat('en-GB', {
-        timeZone: currentMarket.ianaZone,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
-      const localTimeStr = formatter.format(now);
+      try {
+        const rawHolidays = await MarketService.fetchMarketHolidays(exchange, rangeFrom, rangeTo)
+        const holidayLookupMap = (rawHolidays || []).reduce<Record<string, IMarketHolidayItem>>(
+          (lookup, holiday) => {
+            lookup[holiday.date] = holiday
+            return lookup
+          },
+          {},
+        )
 
-      const [hourStr, minStr, secStr] = localTimeStr.split(':');
-      const h = parseInt(hourStr, 10);
-      const m = parseInt(minStr, 10);
-      const s = parseInt(secStr, 10);
-      this.calculateHeroDashboard(h, m, s);
+        const formatter = (day: ICalendarDay) => {
+          day.className = ''
+          day.bottomInfo = ''
 
-      this.setData({
-        localTimeStr: localTimeStr
-      });
-    },
+          const dateStr = formatDateKey(day.date)
+          const holiday = holidayLookupMap[dateStr]
+          if (holiday) {
+            day.className = 'day-holiday'
+            day.bottomInfo = formatHolidayBottomInfo(holiday)
+            return day
+          }
 
-    calculateHeroDashboard(currentHour: number, currentMinute: number, currentSecond: number) {
-      const nowSeconds = currentHour * 3600 + currentMinute * 60 + currentSecond;
+          const dayOfWeek = day.date.getDay()
+          if (dayOfWeek === 0 || dayOfWeek === 6) {
+            day.className = 'day-weekend'
+            day.bottomInfo = '周末'
+          }
 
-      // Suppose it opens at 09:30 and closes at 16:00
-      const openSeconds = 9 * 3600 + 30 * 60;
-      const closeSeconds = 16 * 3600;
-
-      let isMarketOpen = false;
-      let diffSeconds = 0;
-
-      if (nowSeconds >= openSeconds && nowSeconds < closeSeconds) {
-        // Trading
-        isMarketOpen = true;
-        diffSeconds = closeSeconds - nowSeconds;
-      } else {
-        // The market has been closed
-        isMarketOpen = false;
-        if (nowSeconds < openSeconds) {
-          diffSeconds = openSeconds - nowSeconds;
-        } else {
-          const secondsLeftToday = 24 * 3600 - nowSeconds;
-          diffSeconds = secondsLeftToday + openSeconds;
+          return day
         }
+
+        this.setData({
+          dayFormatter: formatter,
+          isLoadingHolidays: false,
+        })
+      } catch (err) {
+        console.error(`[Calendar] 拉取 ${exchange} 假期数据失败:`, err)
+        this.setData({
+          isLoadingHolidays: false,
+          dayFormatter: (day: ICalendarDay) => {
+            day.className = ''
+            day.bottomInfo = ''
+
+            if (day.date.getDay() === 0 || day.date.getDay() === 6) {
+              day.className = 'day-weekend'
+              day.bottomInfo = '周末'
+            }
+
+            return day
+          },
+        })
       }
-      const padZero = (n: number) => n.toString().padStart(2, '0');
-      const diffH = padZero(Math.floor(diffSeconds / 3600));
-      const diffM = padZero(Math.floor((diffSeconds % 3600) / 60));
-      const diffS = padZero(diffSeconds % 60);
-
-
-      const { timelineSlots } = this.data;
-      if (timelineSlots.length === 0) return;
-      const totalStartSec = timelineSlots[0].startSec;
-      const totalEndSec = timelineSlots[timelineSlots.length - 1].endSec;
-      const totalDuration = totalEndSec - totalStartSec;
-
-      let pinPct = 0;
-      let currentSlotIndex = -1;
-
-      if (nowSeconds < totalStartSec) {
-        pinPct = 0;
-      } else if (nowSeconds > totalEndSec) {
-        pinPct = 100;
-      } else {
-        pinPct = ((nowSeconds - totalStartSec) / totalDuration) * 100;
-        currentSlotIndex = timelineSlots.findIndex((s: ITimeSlot) => nowSeconds >= s.startSec && nowSeconds < s.endSec);
-      }
-
-      this.setData({
-        isMarketOpen,
-        countdownStr: `${diffH}:${diffM}:${diffS}`,
-
-        pinPositionPct: pinPct,
-        currentSlotIndex: currentSlotIndex,
-      });
     },
-
-    initTimeline() {
-      const timeToSeconds = (timeStr: string) => {
-        const [h, m] = timeStr.split(':');
-        return parseInt(h) * 3600 + parseInt(m) * 60;
-      };
-
-      const totalStartSec = timeToSeconds('04:00');
-      const totalEndSec = timeToSeconds('20:00');
-      const totalDuration = totalEndSec - totalStartSec;
-
-      const timelineSlots = RAW_SLOTS.map(slot => {
-        const startSec = timeToSeconds(slot.startStr);
-        const endSec = timeToSeconds(slot.endStr);
-        const duration = endSec - startSec;
-        const i18n = getI18n(getAppSettings().language);
-
-        return {
-          ...slot,
-          label: i18n.market.stages[slot.colorType],
-          startSec,
-          endSec,
-          duration,
-          widthPct: (duration / totalDuration) * 100
-        };
-      });
-
-      this.setData({ timelineSlots });
-    },
-
-    onTapAllHolidays() {
-      this.setData({ showCalendar: true });
-    },
-    closeCalendar() {
-      this.setData({ showCalendar: false });
-    },
-
-    startClock() {
-      this.updateLocalTime();
-      timer = setInterval(() => {
-        this.updateLocalTime();
-      }, 1000) as unknown as number;
-    },
-
-    stopClock() {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
-    }
   },
 
-  // Life cycle
   lifetimes: {
     attached() {
-      this.applySettingState();
-      this.startClock();
+      this.applySettingState()
     },
-    detached() {
-      this.stopClock();
-    }
   },
 
-  // For the processing of the mini program entering the
-  // background/foreground under certain specific circumstances
   pageLifetimes: {
     show() {
-      // If returning from another page,
-      // make sure the clock is still running
-      this.applySettingState();
-      if (!timer) this.startClock();
+      this.applySettingState()
     },
-    hide() {
-      // When you switch to the background,
-      // you can pause the clock to save power
-      this.stopClock();
-    }
-  }
+  },
 })

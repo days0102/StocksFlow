@@ -1,6 +1,12 @@
 // app.ts
 import { addLog } from './utils/util'
 import { applyRuntimeSettings, getAppSettings } from './utils/settings'
+import { injectCloudMock } from './utils/mockCloud'
+
+const accountInfo = wx.getAccountInfoSync?.()
+if (accountInfo?.miniProgram?.envVersion !== 'release') {
+  injectCloudMock()
+}
 
 App<IAppOption>({
   globalData: {},

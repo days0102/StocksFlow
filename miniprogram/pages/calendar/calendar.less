@@ -1,30 +1,33 @@
-@bg-color: var(--app-bg-color, #F5F6F8); // Page background
-@surface-color: var(--app-surface-color, #FFFFFF); // Card/module background
-@primary-color: var(--app-primary-color, #2F54EB); // Brand Blue (Highlight)
-@text-main: var(--app-text-main-color, #1A1D24); // Main text color
-@text-secondary: var(--app-text-secondary-color, #8C92A4); // Subtext color/prompt color
-@border-color: var(--app-border-color, #EBF0F5); // Soft border color
+@bg-color: var(--app-bg-color, #f5f6f8);
+@surface-color: var(--app-surface-color, #ffffff);
+@primary-color: var(--app-primary-color, #2f54eb);
+@text-main: var(--app-text-main-color, #1a1d24);
+@text-secondary: var(--app-text-secondary-color, #8c92a4);
+@border-color: var(--app-border-color, #ebf0f5);
 
-@status-open: #00B87A; // Opening green
+@status-open: #00b87a;
 @status-open-bg: rgba(0, 184, 122, 0.1);
-@status-closed: #8C92A4; // Stop buying ashes
+@status-closed: #8c92a4;
 @status-closed-bg: rgba(140, 146, 164, 0.1);
+@status-holiday: #ff8a00;
+@status-holiday-bg: rgba(255, 138, 0, 0.1);
 
-// ==========================================
-// Page base layout
-// ==========================================
 page {
   background-color: @bg-color;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   color: @text-main;
-  font-family: var(--app-font-family, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif);
+  font-family: var(
+    --app-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif
+  );
 }
 
-// ==========================================
-// Top status bar area
-// ==========================================
 .header-section {
   background-color: @surface-color;
   padding: 16rpx 0 24rpx;
@@ -50,7 +53,6 @@ page {
   margin-right: 20rpx;
   border-radius: 32rpx;
   background-color: @bg-color;
-  transition: all 0.2s ease;
 
   .symbol {
     font-size: 24rpx;
@@ -76,7 +78,7 @@ page {
 
 .time-status {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 32rpx;
   margin-top: 8rpx;
@@ -84,17 +86,15 @@ page {
   .tz-label {
     font-size: 22rpx;
     color: @text-secondary;
-    margin-right: 12rpx;
     background-color: @bg-color;
     padding: 4rpx 12rpx;
     border-radius: 8rpx;
   }
 
   .clock {
-    font-size: 28rpx;
+    font-size: 26rpx;
     font-weight: 500;
     color: @text-main;
-    font-family: 'DIN Alternate', 'Courier New', Courier, monospace;
   }
 }
 
@@ -103,490 +103,41 @@ page {
   padding: 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 32rpx;
-  background-color: @bg-color;
 }
-
-.placeholder {
-  border: 2rpx dashed @border-color;
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: @text-secondary;
-  font-size: 28rpx;
-  background-color: @surface-color;
-
-  &.hero-countdown {
-    height: 240rpx;
-  }
-
-  &.timeline {
-    height: 160rpx;
-  }
-
-  &.schedule-cards {
-    flex: 1;
-    min-height: 400rpx;
-  }
-}
-
-// ==========================================
-// Market countdown and current status
-// ==========================================
-.hero-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 64rpx 0;
-}
-
-.status-pill {
-  display: flex;
-  align-items: center;
-  padding: 8rpx 24rpx;
-  border-radius: 100rpx;
-  margin-bottom: 32rpx;
-  transition: all 0.3s ease;
-
-  .dot {
-    width: 12rpx;
-    height: 12rpx;
-    border-radius: 50%;
-    margin-right: 12rpx;
-  }
-
-  text {
-    font-size: 22rpx;
-    font-weight: 600;
-    letter-spacing: 1rpx;
-  }
-
-  // Open state style
-  &.open {
-    background-color: @status-open-bg;
-
-    .dot {
-      background-color: @status-open;
-      box-shadow: 0 0 8rpx @status-open;
-    }
-
-    text {
-      color: @status-open;
-    }
-  }
-
-  // Closed state style
-  &.closed {
-    background-color: @status-closed-bg;
-
-    .dot {
-      background-color: @status-closed;
-    }
-
-    text {
-      color: @status-closed;
-    }
-  }
-}
-
-.countdown-timer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16rpx;
-
-  .time-text {
-    font-size: 96rpx;
-    font-weight: 600;
-    color: @text-main;
-    font-family: 'DIN Alternate', 'Courier New', Courier, monospace;
-    letter-spacing: 4rpx;
-    text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  }
-}
-
-.helper-text {
-  font-size: 26rpx;
-  color: @text-secondary;
-  font-weight: 400;
-}
-
-// ==========================================
-// Visualize the timeline
-// ==========================================
-@timeline-height: 12rpx;
-@timeline-normal: @primary-color;
-@timeline-pending: var(--app-primary-light-color, #D9E1FA);
-
-.timeline-section {
-  padding: 40rpx 16rpx 64rpx;
-  background-color: @surface-color;
-  border-radius: 32rpx;
-  margin-bottom: 32rpx;
-}
-
-.timeline-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
-  padding: 0 16rpx;
-
-  .time-label {
-    font-size: 20rpx;
-    color: @text-secondary;
-    font-family: 'DIN Alternate', monospace;
-  }
-}
-
-.timeline-track-wrap {
-  position: relative;
-  padding: 0 16rpx;
-}
-
-.timeline-track {
-  height: @timeline-height;
-  border-radius: 6rpx;
-  display: flex;
-  overflow: hidden;
-  background-color: @border-color;
-}
-
-.slot-segment {
-  height: 100%;
-  transition: opacity 0.3s ease;
-
-  &.pre,
-  &.post {
-    background-color: @timeline-pending;
-  }
-
-  &.normal {
-    background-color: @timeline-normal;
-  }
-
-  &.inactive {
-    opacity: 0.4;
-  }
-}
-
-.timeline-pin {
-  position: absolute;
-  top: -24rpx;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: left 1s linear;
-  z-index: 10;
-
-  .pin-label {
-    background-color: @primary-color;
-    color: #FFFFFF;
-    font-size: 18rpx;
-    font-weight: 700;
-    padding: 4rpx 12rpx;
-    border-radius: 8rpx;
-    margin-bottom: 6rpx;
-    box-shadow: 0 4rpx 12rpx rgba(47, 84, 235, 0.4);
-    letter-spacing: 1rpx;
-  }
-
-  .pin-line {
-    width: 4rpx;
-    height: 32rpx;
-    background-color: @primary-color;
-    border-radius: 2rpx;
-  }
-}
-
-.timeline-desc {
-  display: flex;
-  margin-top: 32rpx;
-  padding: 0 16rpx;
-
-  .desc-item {
-    font-size: 22rpx;
-    color: @text-secondary;
-    text-align: center;
-    transition: color 0.3s;
-
-    &.active {
-      color: @text-main;
-      font-weight: 600;
-    }
-  }
-}
-
-// ==========================================
-// Module common title
-// ==========================================
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 24rpx;
-  padding: 0 8rpx;
-
-  .title {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: @text-main;
-    display: flex;
-    align-items: center;
-
-    &::before {
-      content: '';
-      display: inline-block;
-      width: 8rpx;
-      height: 28rpx;
-      background-color: @primary-color;
-      border-radius: 4rpx;
-      margin-right: 16rpx;
-    }
-  }
-
-  .more-link {
-    font-size: 24rpx;
-    color: @primary-color;
-    font-weight: 500;
-  }
-}
-
-// ==========================================
-// Secondary information 1: Today's detailed timetable
-// ==========================================
-.schedule-section {
-  margin-bottom: 48rpx;
-}
-
-.schedule-card {
-  background-color: @surface-color;
-  border-radius: 24rpx;
-  overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.02);
-}
-
-.schedule-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 32rpx 40rpx;
-  border-bottom: 2rpx solid @border-color;
-  background-color: @surface-color;
-  transition: all 0.3s ease;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .left-info {
-    display: flex;
-    flex-direction: column;
-
-    .stage-name {
-      font-size: 28rpx;
-      color: @text-main;
-      font-weight: 500;
-      margin-bottom: 8rpx;
-    }
-
-    .stage-desc {
-      font-size: 22rpx;
-      color: @text-secondary;
-    }
-  }
-
-  .right-time {
-    font-size: 28rpx;
-    color: @text-main;
-    font-family: 'DIN Alternate', monospace;
-    font-weight: 600;
-  }
-
-  &.active {
-    background-color: var(--app-primary-light-color, rgba(47, 84, 235, 0.04));
-    position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 16rpx;
-      bottom: 16rpx;
-      width: 8rpx;
-      background-color: @primary-color;
-      border-radius: 0 8rpx 8rpx 0;
-    }
-
-    .left-info .stage-name {
-      color: @primary-color;
-      font-weight: 600;
-    }
-
-    .right-time {
-      color: @primary-color;
-    }
-  }
-}
-
-// ==========================================
-// Secondary message 2: The upcoming holidays
-// ==========================================
-.holiday-section {
-  margin-bottom: 64rpx;
-}
-
-// Roll the container horizontally
-.holiday-scroll {
-  width: 100%;
-  white-space: nowrap;
-  padding: 8rpx 0 32rpx 0;
-  margin-left: -8rpx;
-}
-
-.holiday-list {
-  display: inline-flex;
-  padding: 0 8rpx;
-}
-
-.holiday-card {
-  display: inline-flex;
-  flex-direction: column;
-  width: 320rpx;
-  background-color: @surface-color;
-  border-radius: 20rpx;
-  padding: 32rpx;
-  margin-right: 24rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
-  border: 2rpx solid transparent;
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24rpx;
-
-    .status-tag {
-      font-size: 20rpx;
-      color: #FF4D4F;
-      background-color: rgba(255, 77, 79, 0.1);
-      padding: 4rpx 12rpx;
-      border-radius: 8rpx;
-      font-weight: 600;
-    }
-
-    .icon {
-      font-size: 28rpx;
-    }
-  }
-
-  .holiday-name {
-    font-size: 30rpx;
-    font-weight: 600;
-    color: @text-main;
-    margin-bottom: 12rpx;
-    white-space: normal;
-    height: 84rpx;
-  }
-
-  .holiday-date {
-    display: flex;
-    align-items: center;
-    font-size: 24rpx;
-    color: @text-secondary;
-
-    .calendar-icon {
-      margin-right: 8rpx;
-      font-size: 24rpx;
-    }
-  }
-}
-
-// ==========================================
-// Half-screen drawer pop-up calendar
-// ==========================================
 
 .calendar-sheet {
   background-color: @surface-color;
-  border-radius: 40rpx 40rpx 0 0;
-  display: flex;
-  flex-direction: column;
-  height: 70vh;
-  overflow: hidden;
+  border-radius: 32rpx;
+  padding: 28rpx 24rpx 24rpx;
+  box-shadow: 0 8rpx 24rpx var(--app-shadow-color, rgba(0, 0, 0, 0.04));
 }
 
 .sheet-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 40rpx 40rpx 24rpx;
-  border-bottom: 2rpx solid @border-color;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
 
-  .title-area {
-    display: flex;
-    align-items: flex-end;
+.title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 
-    .title {
-      font-size: 36rpx;
-      font-weight: 600;
-      color: @text-main;
-      margin-right: 16rpx;
-    }
-
-    .subtitle {
-      font-size: 24rpx;
-      color: @text-secondary;
-      padding-bottom: 4rpx;
-    }
+  .title {
+    font-size: 34rpx;
+    font-weight: 700;
+    color: @text-main;
   }
 
-  .close-btn {
-    width: 64rpx;
-    height: 64rpx;
-    background-color: @bg-color;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.2s;
-
-    &:active {
-      background-color: @border-color;
-    }
-
-    .close-icon {
-      position: relative;
-      width: 24rpx;
-      height: 24rpx;
-
-      &::before,
-      &::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        width: 100%;
-        height: 4rpx;
-        background-color: @text-secondary;
-        border-radius: 2rpx;
-      }
-
-      &::before {
-        transform: translateY(-50%) rotate(45deg);
-      }
-
-      &::after {
-        transform: translateY(-50%) rotate(-45deg);
-      }
-    }
+  .subtitle {
+    font-size: 24rpx;
+    color: @text-secondary;
   }
 }
 
 .calendar-wrap {
-  flex: 1;
-  position: relative;
+  min-height: 780rpx;
 }
 
 .custom-vant-calendar {
@@ -612,58 +163,70 @@ page {
 
   // Holiday style: Inject a small red dot logo
   .day-holiday {
-    color: #FF4D4F !important;
+    color: #ff4d4f !important;
     font-weight: 600;
 
     // Override the text color at the bottom
     .van-calendar__bottom-info {
-      color: #FF4D4F;
+      color: #ff4d4f;
     }
 
     // Use pseudo-elements to add a red dot in the upper right corner of the date (official holiday mark)
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 12rpx;
       right: 16rpx;
       width: 10rpx;
       height: 10rpx;
-      background-color: #FF4D4F;
+      background-color: #ff4d4f;
       border-radius: 50%;
     }
   }
 }
 
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 780rpx;
+  color: @text-secondary;
+  font-size: 28rpx;
+}
+
 .sheet-legend {
   display: flex;
-  justify-content: space-around;
-  padding: 32rpx 40rpx calc(32rpx + env(safe-area-inset-bottom));
-  background-color: @surface-color;
-  border-top: 2rpx solid @border-color;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 24rpx;
+  flex-wrap: wrap;
+}
 
-  .legend-item {
-    display: flex;
-    align-items: center;
-    font-size: 24rpx;
-    color: @text-secondary;
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+  font-size: 22rpx;
+  color: @text-secondary;
+}
 
-    .dot {
-      width: 12rpx;
-      height: 12rpx;
-      border-radius: 50%;
-      margin-right: 12rpx;
+.dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
 
-      &.status-open {
-        background-color: @primary-color;
-      }
+  &.status-open {
+    background-color: @status-open;
+    box-shadow: 0 0 0 6rpx @status-open-bg;
+  }
 
-      &.status-closed {
-        background-color: @text-secondary;
-      }
+  &.status-closed {
+    background-color: @status-closed;
+    box-shadow: 0 0 0 6rpx @status-closed-bg;
+  }
 
-      &.status-holiday {
-        background-color: #FF4D4F;
-      }
-    }
+  &.status-holiday {
+    background-color: @status-holiday;
+    box-shadow: 0 0 0 6rpx @status-holiday-bg;
   }
 }

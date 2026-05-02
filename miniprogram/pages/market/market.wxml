@@ -1,181 +1,183 @@
 <view class="app-page {{appThemeClass}} {{appLanguageClass}}" style="{{appThemeVars}}">
-<navigation-bar title="{{i18n.pages.market}}" back="{{false}}" color="{{appTheme.navTextColor}}" background="{{appTheme.navBackgroundColor}}"></navigation-bar>
+  <navigation-bar
+    title="{{i18n.pages.market}}"
+    back="{{false}}"
+    color="{{appTheme.navTextColor}}"
+    background="{{appTheme.navBackgroundColor}}"
+  ></navigation-bar>
 
-<view class="header-section">
-  <!-- Market selector that scrolls horizontally -->
-  <scroll-view 
-    class="market-scroll" 
-    scroll-x 
-    enhanced 
-    show-scrollbar="{{false}}"
-  >
-    <view class="market-tabs">
-      <block wx:for="{{marketList}}" wx:key="id">
-        <view 
-          class="tab-item {{currentMarketId === item.id ? 'active' : ''}}" 
-          bindtap="onSwitchMarket" 
-          data-id="{{item.id}}"
-        >
-          <text class="symbol">{{item.symbol}}</text>
-          <text class="name">{{item.name}}</text>
-        </view>
-      </block>
-    </view>
-  </scroll-view>
-
-  <!-- The local time corresponding to the current market -->
-  <view class="time-status">
-    <text class="tz-label">{{currentMarket.tzLabel}}</text>
-    <text class="clock">{{localTimeStr}}</text>
-  </view>
-</view>
-
-<view class="content-body">
-  <view class="hero-section">
-    <view class="status-pill {{isMarketOpen ? 'open' : 'closed'}}">
-      <view class="dot"></view>
-      <text>{{isMarketOpen ? i18n.market.open : i18n.market.closed}}</text>
-    </view>
-
-    <view class="countdown-timer">
-      <text class="time-text">{{countdownStr}}</text>
-    </view>
-
-    <text class="helper-text">{{isMarketOpen ? i18n.market.untilClose : i18n.market.untilOpen}}</text>
-  </view>
-  
-  <view class="timeline-section">
-    <!-- Top time scale (04:00, 09:30, 16:00, 20:00) -->
-    <view class="timeline-labels">
-      <text class="time-label">{{timelineSlots[0].startStr}}</text>
-      <block wx:for="{{timelineSlots}}" wx:key="label">
-        <text class="time-label">{{item.endStr}}</text>
-      </block>
-    </view>
-
-    <!-- Progress bar body and positioning pin -->
-    <view class="timeline-track-wrap">
-      <!-- Progress bar segmented color blocks -->
-      <view class="timeline-track">
-        <block wx:for="{{timelineSlots}}" wx:key="label">
-          <view 
-            class="slot-segment {{item.colorType}} {{currentSlotIndex === index ? '' : 'inactive'}}"
-            style="width: {{item.widthPct + '%'}};"
-          ></view>
-        </block>
-      </view>
-
-      <!-- Locating needles -->
-      <view class="timeline-pin" style="left: {{pinPositionPct + '%'}}">
-        <view class="pin-label">{{pinLabel}}</view>
-        <view class="pin-line"></view>
-      </view>
-    </view>
-
-    <!-- Bottom period description -->
-    <view class="timeline-desc">
-      <block wx:for="{{timelineSlots}}" wx:key="label">
-        <view 
-          class="desc-item {{currentSlotIndex === index ? 'active' : ''}}"
-          style="width: {{item.widthPct + '%'}}"
-        >
-          {{item.label}}
-        </view>
-      </block>
-    </view>
-  </view>
-  
-  <!-- Secondary message 1: Today's timetable -->
-  <view class="schedule-section">
-    <view class="section-header">
-      <text class="title">{{currentMarket.symbol}} {{i18n.market.todaySchedule}}</text>
-      <text class="more-link" style="color: {{appTheme.textSecondaryColor}}; font-weight: 400;">{{i18n.common.localTime}} {{currentMarket.tzLabel}}</text>
-    </view>
-
-    <view class="schedule-card">
-      <block wx:for="{{timelineSlots}}" wx:key="label">
-        <view class="schedule-row {{currentSlotIndex === index ? 'active' : ''}}">
-          <view class="left-info">
-            <text class="stage-name">{{item.label}}</text>
-            <text class="stage-desc">{{item.colorType === 'pre' ? 'Pre-Market' : (item.colorType === 'normal' ? 'Regular Hours' : 'After-Hours')}}</text>
-          </view>
-          <view class="right-time">
-            {{item.startStr}} - {{item.endStr}}
-          </view>
-        </view>
-      </block>
-    </view>
-  </view>
-
-  <!-- Secondary message 2: The upcoming holidays -->
-  <view class="holiday-section">
-    <view class="section-header">
-      <text class="title">{{i18n.market.upcomingHolidays}}</text>
-      <text class="more-link" bindtap="onTapAllHolidays">{{i18n.market.fullCalendar}}</text>
-    </view>
-
-    <scroll-view 
-      class="holiday-scroll" 
-      scroll-x 
-      enhanced 
+  <view class="header-section">
+    <scroll-view
+      class="market-scroll"
+      scroll-x
+      enhanced
       show-scrollbar="{{false}}"
     >
-      <view class="holiday-list">
-        <block wx:for="{{upcomingHolidays}}" wx:key="id">
-          <view class="holiday-card">
-            <view class="card-header">
-              <text class="status-tag">{{item.statusText}}</text>
-            </view>
-
-            <view class="holiday-name">{{item.name}}</view>
-
-            <view class="holiday-date">
-              <text>{{item.dateStr}}</text>
-            </view>
+      <view class="market-tabs">
+        <block wx:for="{{marketList}}" wx:key="id">
+          <view
+            class="tab-item {{currentMarketId === item.id ? 'active' : ''}}"
+            bindtap="onSwitchMarket"
+            data-id="{{item.id}}"
+          >
+            <text class="symbol">{{item.symbol}}</text>
+            <text class="name">{{item.name}}</text>
           </view>
         </block>
       </view>
     </scroll-view>
+
+    <view class="time-status">
+      <text class="tz-label">{{currentMarket.tzLabel}}</text>
+      <text class="clock">{{localTimeStr}}</text>
+    </view>
   </view>
 
-  <page-container
-    show="{{showCalendar}}"
-    round="{{true}}"
-    overlay="{{true}}"
-    duration="300"
-    position="bottom"
-    custom-style="background-color: transparent;"
-  >
-    <view class="calendar-sheet">
-      <view class="sheet-header">
-        <view class="title-area">
-          <text class="title">{{currentMarket.symbol}} {{i18n.market.tradingCalendar}}</text>
-          <text class="subtitle">{{i18n.common.localTime}}</text>
-        </view>
-        <view class="close-btn" bindtap="closeCalendar">
-          <view class="close-icon"></view>
+  <view class="content-body">
+    <view class="hero-section">
+      <view class="status-pill {{isMarketOpen ? 'open' : 'closed'}}">
+        <view class="dot"></view>
+        <text>{{isMarketOpen ? i18n.market.open : i18n.market.closed}}</text>
+      </view>
+
+      <view class="countdown-timer">
+        <text class="time-text">{{countdownStr}}</text>
+      </view>
+
+      <text class="helper-text">{{isMarketOpen ? i18n.market.untilClose : i18n.market.untilOpen}}</text>
+    </view>
+
+    <view class="timeline-section">
+      <view class="timeline-labels-exact">
+        <text class="start-time">{{timelineSlots[0].startStr}}</text>
+        <view class="end-times-track">
+          <block wx:for="{{timelineSlots}}" wx:key="label">
+            <view class="time-slot-box" style="width: {{item.widthPct}}%;">
+              <text class="end-time">{{item.endStr}}</text>
+            </view>
+          </block>
         </view>
       </view>
 
-      <view class="calendar-wrap">
-        <van-calendar 
-          class="custom-vant-calendar"
-          poppable="{{ false }}"
-          show-title="{{ false }}"
-          show-subtitle="{{ true }}"
-          show-confirm="{{ false }}"
-          min-date="{{ minDate }}"
-          max-date="{{ maxDate }}"
-          formatter="{{ dayFormatter }}"
-        />
+      <view class="timeline-track-wrap">
+        <view class="timeline-track">
+          <block wx:for="{{timelineSlots}}" wx:key="label">
+            <view
+              class="slot-segment {{item.colorType}} {{currentSlotIndex === index ? 'active' : ''}}"
+              style="width: {{item.widthPct + '%'}};"
+            ></view>
+          </block>
+        </view>
+
+        <view class="timeline-pin" style="left: {{pinPositionPct + '%'}}">
+          <view class="pin-label">{{pinLabel}}</view>
+          <view class="pin-line"></view>
+        </view>
       </view>
 
-      <view class="sheet-legend">
-        <view class="legend-item"><view class="dot status-open"></view>{{i18n.market.normalTrading}}</view>
-        <view class="legend-item"><view class="dot status-closed"></view>{{i18n.market.weekendClosed}}</view>
-        <view class="legend-item"><view class="dot status-holiday"></view>{{i18n.market.holidayClosed}}</view>
+      <view class="timeline-desc">
+        <block wx:for="{{timelineSlots}}" wx:key="label">
+          <view
+            class="desc-item {{currentSlotIndex === index ? 'active' : ''}}"
+            style="width: {{item.widthPct + '%'}}"
+          >
+            {{item.label}}
+          </view>
+        </block>
       </view>
     </view>
-  </page-container>
-</view>
+
+    <view class="schedule-section">
+      <view class="section-header">
+        <text class="title">{{currentMarket.symbol}} {{i18n.market.todaySchedule}}</text>
+        <text class="more-link" style="color: {{appTheme.textSecondaryColor}}; font-weight: 400;">
+          {{i18n.common.localTime}} {{currentMarket.tzLabel}}
+        </text>
+      </view>
+
+      <view class="schedule-card">
+        <block wx:for="{{timelineSlots}}" wx:key="label">
+          <view class="schedule-row {{currentSlotIndex === index ? 'active' : ''}}">
+            <view class="left-info">
+              <text class="stage-name">{{item.label}}</text>
+              <text class="stage-desc">
+                {{item.colorType === 'pre' ? 'Pre-Market' : (item.colorType === 'normal' ? 'Regular Hours' : 'After-Hours')}}
+              </text>
+            </view>
+            <view class="right-time">
+              {{item.startStr}} - {{item.endStr}}
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <view class="holiday-section">
+      <view class="section-header">
+        <text class="title">{{i18n.market.upcomingHolidays}}</text>
+        <text class="more-link" bindtap="onTapAllHolidays">{{i18n.market.fullCalendar}}</text>
+      </view>
+
+      <scroll-view
+        class="holiday-scroll"
+        scroll-x
+        enhanced
+        show-scrollbar="{{false}}"
+      >
+        <view class="holiday-list">
+          <block wx:for="{{upcomingHolidays}}" wx:key="id">
+            <view class="holiday-card">
+              <view class="card-header">
+                <text class="status-tag">{{item.statusText}}</text>
+              </view>
+              <view class="holiday-name">{{item.name}}</view>
+              <view class="holiday-date">
+                <text>{{item.dateStr}}</text>
+              </view>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+    </view>
+
+    <page-container
+      show="{{showCalendar}}"
+      round="{{true}}"
+      overlay="{{true}}"
+      duration="300"
+      position="bottom"
+      custom-style="background-color: transparent;"
+    >
+      <view class="calendar-sheet">
+        <view class="sheet-header">
+          <view class="title-area">
+            <text class="title">{{currentMarket.symbol}} {{i18n.market.tradingCalendar}}</text>
+            <text class="subtitle">{{i18n.common.localTime}}</text>
+          </view>
+          <view class="close-btn" bindtap="closeCalendar">
+            <view class="close-icon"></view>
+          </view>
+        </view>
+
+        <view class="calendar-wrap">
+          <van-calendar
+            class="custom-vant-calendar"
+            poppable="{{ false }}"
+            show-title="{{ false }}"
+            show-subtitle="{{ true }}"
+            show-confirm="{{ false }}"
+            min-date="{{ minDate }}"
+            max-date="{{ maxDate }}"
+            formatter="{{ dayFormatter }}"
+          />
+        </view>
+
+        <view class="sheet-legend">
+          <view class="legend-item"><view class="dot status-open"></view>{{i18n.market.normalTrading}}</view>
+          <view class="legend-item"><view class="dot status-closed"></view>{{i18n.market.weekendClosed}}</view>
+          <view class="legend-item"><view class="dot status-holiday"></view>{{i18n.market.holidayClosed}}</view>
+        </view>
+      </view>
+    </page-container>
+  </view>
 </view>

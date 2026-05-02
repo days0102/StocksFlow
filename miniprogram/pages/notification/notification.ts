@@ -38,7 +38,7 @@ function generateMockMessages() {
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
   const days: Date[] = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 6; i += 1) {
     const d = new Date(now)
     d.setDate(d.getDate() - i)
     days.push(d)
@@ -127,6 +127,7 @@ Component({
       this.loadData()
     },
   },
+
   pageLifetimes: {
     show() {
       this.loadData()
@@ -141,6 +142,7 @@ Component({
       const subscriptions = MARKET_LIST.map(market => {
         const savedSub = saved.find((s: any) => s.marketId === market.id)
         const timing = ((savedSub && savedSub.timing) || '15min_before') as TimingValue
+
         return {
           marketId: market.id,
           marketName: getMarketLabel(market.id, settings.language),
@@ -173,8 +175,8 @@ Component({
 
     updateSub(index: number, patch: Record<string, any>) {
       const data: Record<string, any> = {}
-      Object.keys(patch).forEach(k => {
-        data[`subscriptions[${index}].${k}`] = patch[k]
+      Object.keys(patch).forEach((key) => {
+        data[`subscriptions[${index}].${key}`] = patch[key]
       })
       this.setData(data)
       this.persistSubscriptions()
@@ -206,7 +208,6 @@ Component({
             wx.showToast({ title: `${sub.marketName}${i18n.localEnabled}`, icon: 'none' })
           },
           fail: () => {
-            // 用户拒绝授权但也保存偏好，后续可重新授权
             this.updateSub(index, { enabled: true })
             wx.showToast({ title: i18n.authSuggest, icon: 'none', duration: 2000 })
           },
