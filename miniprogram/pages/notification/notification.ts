@@ -1,14 +1,24 @@
 import {
   MarketId,
-  SUBSCRIBE_TEMPLATE_IDS,
   createRuntimeData,
   getAppSettings,
   getI18n,
   getMarketLabel,
   syncRuntimeSettings,
 } from '../../utils/settings'
-
-type TimingValue = 'at_open' | '5min_before' | '15min_before'
+import { addLog } from '../../utils/util'
+import {
+  TimingValue,
+  buildMarketOpenSubscribePayload,
+  getConfiguredSubscribeTemplateIds,
+  getNotificationMessages,
+  getStoredSubscriptions,
+  markNotificationMessageRead,
+  refreshSubscribeTemplateConfig,
+  requestSubscribeAuthorization,
+  saveStoredSubscriptions,
+  sendSubscribeMessage,
+} from '../../services/notificationService'
 
 const MARKET_LIST = [
   { id: 'cn' as MarketId, icon: 'CN', openTime: '09:30' },
@@ -32,82 +42,6 @@ function buildTimingOptions() {
   }))
 }
 
-function generateMockMessages() {
-  const now = new Date()
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-  const days: Date[] = []
-  for (let i = 0; i < 6; i += 1) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - i)
-    days.push(d)
-  }
-
-  return [
-    {
-      id: 'm1',
-      type: 'market_open',
-      title: 'A股即将开盘',
-      marketName: 'A股',
-      time: '09:15',
-      date: fmt(days[0]),
-      content: 'A股将于15分钟后开盘，请关注今日行情。',
-      read: false,
-    },
-    {
-      id: 'm2',
-      type: 'market_open',
-      title: '港股即将开盘',
-      marketName: '港股',
-      time: '09:25',
-      date: fmt(days[0]),
-      content: '港股将于5分钟后开盘，恒指期货小幅走高。',
-      read: false,
-    },
-    {
-      id: 'm3',
-      type: 'market_close',
-      title: '美股收盘回顾',
-      marketName: '美股',
-      time: '16:00',
-      date: fmt(days[1]),
-      content: '美股已收盘，道指上涨0.5%，纳指上涨0.3%。',
-      read: true,
-    },
-    {
-      id: 'm4',
-      type: 'holiday',
-      title: '美股休市提醒',
-      marketName: '美股',
-      time: '08:00',
-      date: fmt(days[2]),
-      content: '今日美股因阵亡将士纪念日休市，明日恢复交易。',
-      read: true,
-    },
-    {
-      id: 'm5',
-      type: 'market_open',
-      title: '英股即将开盘',
-      marketName: '英股',
-      time: '07:50',
-      date: fmt(days[3]),
-      content: '英股将于10分钟后开盘，富时100指数期货上涨。',
-      read: true,
-    },
-    {
-      id: 'm6',
-      type: 'system',
-      title: '通知功能已上线',
-      marketName: '系统',
-      time: '12:00',
-      date: fmt(days[5]),
-      content: '现在可以订阅市场开盘提醒，设置提醒时机，不错过交易机会。',
-      read: true,
-    },
-  ]
-}
-
 Component({
   data: {
     ...createRuntimeData(),
@@ -117,9 +51,10 @@ Component({
     activeMarketIndex: -1,
     showTimingSheet: false,
     notifyMessages: [] as any[],
-    tmplIds: SUBSCRIBE_TEMPLATE_IDS,
+    tmplIds: getConfiguredSubscribeTemplateIds(),
     subscriptionEnabled: getAppSettings().subscriptionEnabled,
     notifyFrequency: getAppSettings().notifyFrequency,
+    sendingTest: false,
   },
 
   lifetimes: {
@@ -138,7 +73,7 @@ Component({
     loadData() {
       syncRuntimeSettings(this)
       const settings = getAppSettings()
-      const saved = wx.getStorageSync('settings_subscriptions') || []
+      const saved = getStoredSubscriptions()
       const subscriptions = MARKET_LIST.map(market => {
         const savedSub = saved.find((s: any) => s.marketId === market.id)
         const timing = ((savedSub && savedSub.timing) || '15min_before') as TimingValue
@@ -157,11 +92,17 @@ Component({
       this.setData({
         subscriptions,
         timingOptions: buildTimingOptions(),
-        notifyMessages: generateMockMessages(),
-        tmplIds: SUBSCRIBE_TEMPLATE_IDS,
+        notifyMessages: getNotificationMessages(),
+        tmplIds: getConfiguredSubscribeTemplateIds(),
         subscriptionEnabled: settings.subscriptionEnabled,
         notifyFrequency: settings.notifyFrequency,
       })
+      this.refreshTemplateConfig()
+    },
+
+    async refreshTemplateConfig() {
+      const templateConfig = await refreshSubscribeTemplateConfig()
+      this.setData({ tmplIds: templateConfig.templateIds })
     },
 
     persistSubscriptions() {
@@ -170,7 +111,7 @@ Component({
         enabled: s.enabled,
         timing: s.timing,
       }))
-      wx.setStorageSync('settings_subscriptions', subs)
+      saveStoredSubscriptions(subs)
     },
 
     updateSub(index: number, patch: Record<string, any>) {
@@ -182,7 +123,7 @@ Component({
       this.persistSubscriptions()
     },
 
-    onMarketToggle(e: any) {
+    async onMarketToggle(e: any) {
       const index = e.currentTarget.dataset.index
       const enabled = e.detail
       const sub = this.data.subscriptions[index]
@@ -195,23 +136,20 @@ Component({
       }
 
       if (enabled) {
-        if (this.data.tmplIds.length === 0) {
+        const tmplIds = getConfiguredSubscribeTemplateIds()
+        if (tmplIds.length === 0) {
           this.updateSub(index, { enabled: true })
-          wx.showToast({ title: `${sub.marketName}${i18n.localEnabled}`, icon: 'none' })
+          wx.showToast({ title: i18n.templateMissing, icon: 'none', duration: 2200 })
           return
         }
 
-        wx.requestSubscribeMessage({
-          tmplIds: this.data.tmplIds,
-          success: () => {
-            this.updateSub(index, { enabled: true })
-            wx.showToast({ title: `${sub.marketName}${i18n.localEnabled}`, icon: 'none' })
-          },
-          fail: () => {
-            this.updateSub(index, { enabled: true })
-            wx.showToast({ title: i18n.authSuggest, icon: 'none', duration: 2000 })
-          },
-        })
+        const authResult = await requestSubscribeAuthorization(tmplIds)
+        this.updateSub(index, { enabled: true })
+        if (authResult.acceptedTemplateIds.length > 0) {
+          wx.showToast({ title: `${sub.marketName}${i18n.localEnabled}`, icon: 'none' })
+        } else {
+          wx.showToast({ title: i18n.authSuggest, icon: 'none', duration: 2000 })
+        }
       } else {
         this.updateSub(index, { enabled: false })
         wx.showToast({ title: `${sub.marketName}${i18n.disabled}`, icon: 'none' })
@@ -248,22 +186,75 @@ Component({
       })
     },
 
-    onAuthorizeAll() {
+    async onAuthorizeAll() {
       const i18n = getI18n(getAppSettings().language).notification
-      wx.requestSubscribeMessage({
-        tmplIds: this.data.tmplIds,
-        success: () => {
-          wx.showToast({ title: i18n.authSuccess, icon: 'none' })
-        },
-        fail: () => {
-          wx.showToast({ title: i18n.authFail, icon: 'none' })
-        },
+      const tmplIds = getConfiguredSubscribeTemplateIds()
+      if (tmplIds.length === 0) {
+        wx.showToast({ title: i18n.templateMissing, icon: 'none', duration: 2200 })
+        return
+      }
+
+      const result = await requestSubscribeAuthorization(tmplIds)
+      wx.showToast({
+        title: result.acceptedTemplateIds.length > 0 ? i18n.authSuccess : i18n.authFail,
+        icon: 'none',
+      })
+    },
+
+    async onSendTestNotification() {
+      if (this.data.sendingTest) return
+
+      const settings = getAppSettings()
+      const i18n = getI18n(settings.language).notification
+
+      if (!settings.subscriptionEnabled) {
+        wx.showToast({ title: i18n.enableSettingsFirst, icon: 'none' })
+        return
+      }
+
+      const tmplIds = getConfiguredSubscribeTemplateIds()
+      if (tmplIds.length === 0) {
+        wx.showToast({ title: i18n.templateMissing, icon: 'none', duration: 2200 })
+        return
+      }
+
+      const targetSub = this.data.subscriptions.find((item: any) => item.enabled) || this.data.subscriptions[0]
+      if (!targetSub) return
+
+      this.setData({ sendingTest: true })
+      const authResult = await requestSubscribeAuthorization(tmplIds)
+      const templateId = authResult.acceptedTemplateIds[0]
+
+      if (!templateId) {
+        this.setData({ sendingTest: false })
+        wx.showToast({ title: i18n.authSuggest, icon: 'none', duration: 2000 })
+        return
+      }
+
+      const payload = buildMarketOpenSubscribePayload({
+        templateId,
+        marketName: targetSub.marketName,
+        timingLabel: targetSub.timingLabel,
+        openTime: targetSub.openTime,
+      })
+      const result = await sendSubscribeMessage(payload)
+      this.setData({
+        sendingTest: false,
+        notifyMessages: getNotificationMessages(),
+      })
+
+      addLog('发送通知', result.ok ? `已发送: ${targetSub.marketName}` : `发送失败: ${result.msg}`)
+      wx.showToast({
+        title: result.ok ? i18n.sendSuccess : i18n.sendFail,
+        icon: 'none',
+        duration: 2000,
       })
     },
 
     onTapMessage(e: any) {
       const { index } = e.currentTarget.dataset
       if (index !== undefined) {
+        markNotificationMessageRead(index)
         this.setData({ [`notifyMessages[${index}].read`]: true })
       }
     },

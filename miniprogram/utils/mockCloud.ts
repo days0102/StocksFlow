@@ -55,6 +55,39 @@ export const injectCloudMock = () => {
               result: { code: 0, data: MOCK_SSE_HOLIDAYS },
             };
         }
+      case "sendSubscribeMessage":
+        if (originalCallFunction) {
+          return originalCallFunction.call(this, params);
+        }
+        if (data?.action === "getConfig") {
+          return {
+            result: {
+              code: 0,
+              data: {
+                templateIds: [],
+                fields: {
+                  title: "thing1",
+                  marketName: "thing6",
+                  openTime: "time8",
+                  status: "thing3",
+                  timing: "thing5",
+                },
+              },
+            },
+          };
+        }
+        return {
+          result: {
+            code: 0,
+            msg: "mock subscribe message sent",
+            data: {
+              errCode: 0,
+              errMsg: "openapi.subscribeMessage.send:ok",
+              templateId: data?.templateId,
+              page: data?.page,
+            },
+          },
+        };
 
       default:
         if (originalCallFunction) {

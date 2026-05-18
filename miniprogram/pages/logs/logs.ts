@@ -29,6 +29,7 @@ const ACTION_LABELS: Record<string, Record<LanguageCode, string>> = {
   '更改默认市场': { 'zh-CN': '更改默认市场', 'zh-TW': '更改預設市場', en: 'Default Market Changed' },
   '消息订阅服务': { 'zh-CN': '消息订阅服务', 'zh-TW': '訊息訂閱服務', en: 'Notification Subscription' },
   '更改通知频率': { 'zh-CN': '更改通知频率', 'zh-TW': '更改通知頻率', en: 'Notification Frequency Changed' },
+  '发送通知': { 'zh-CN': '发送通知', 'zh-TW': '發送通知', en: 'Notification Sent' },
   '退出登录': { 'zh-CN': '退出登录', 'zh-TW': '登出', en: 'Logged Out' },
   '提交意见反馈': { 'zh-CN': '提交意见反馈', 'zh-TW': '提交意見回饋', en: 'Feedback Submitted' },
 }
@@ -98,6 +99,22 @@ function translateDetail(detail: string, language: LanguageCode) {
     if (language === 'en') return `Changed to: ${value}`
     if (language === 'zh-TW') return `變更為：${value}`
     return `变更为：${value}`
+  }
+
+  const sentMatch = detail.match(/^(已发送|已發送|Sent)[:：]?\s*(.+)$/)
+  if (sentMatch) {
+    const value = translateValue(sentMatch[2], language)
+    if (language === 'en') return `Sent: ${value}`
+    if (language === 'zh-TW') return `已發送：${value}`
+    return `已发送：${value}`
+  }
+
+  const failedMatch = detail.match(/^(发送失败|發送失敗|Send failed)[:：]?\s*(.+)$/)
+  if (failedMatch) {
+    const value = translateValue(failedMatch[2], language)
+    if (language === 'en') return `Send failed: ${value}`
+    if (language === 'zh-TW') return `發送失敗：${value}`
+    return `发送失败：${value}`
   }
 
   return DETAIL_LABELS[detail]?.[language] || translateValue(detail, language)

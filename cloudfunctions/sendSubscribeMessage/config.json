@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "openapi": [
+      "subscribeMessage.send"
+    ]
+  },
+  "SUBSCRIBE_TEMPLATE_ID": "cQgkPQAji-RoXNLz3ARA7iWdZfYej4edC9E3NZ--_L8",
+  "SUBSCRIBE_TEMPLATE_IDS": "",
+  "SUBSCRIBE_TEMPLATE_FIELDS": "{\"title\":\"thing1\",\"marketName\":\"thing6\",\"openTime\":\"time8\",\"status\":\"thing3\",\"timing\":\"thing5\"}",
+  "MINIPROGRAM_STATE": "formal",
+  "SUBSCRIBE_MESSAGE_LANG": "zh_CN"
+}
