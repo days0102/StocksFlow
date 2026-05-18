@@ -4,6 +4,9 @@ import { applyRuntimeSettings, getAppSettings } from './utils/settings'
 import { injectCloudMock } from './utils/mockCloud'
 
 const accountInfo = wx.getAccountInfoSync?.()
+if (wx.cloud?.init) {
+  wx.cloud.init({ traceUser: true })
+}
 if (accountInfo?.miniProgram?.envVersion !== 'release') {
   injectCloudMock()
 }

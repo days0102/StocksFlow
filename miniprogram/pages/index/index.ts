@@ -9,7 +9,6 @@ import {
   MarketId,
   NOTIFY_FREQ_OPTIONS,
   NotifyFrequency,
-  SUBSCRIBE_TEMPLATE_IDS,
   THEME_OPTIONS,
   ThemeMode,
   buildActions,
@@ -24,6 +23,11 @@ import {
   setAppSetting,
   syncRuntimeSettings,
 } from '../../utils/settings'
+import {
+  getConfiguredSubscribeTemplateIds,
+  refreshSubscribeTemplateConfig,
+  requestSubscribeAuthorization,
+} from '../../services/notificationService'
 
 const defaultAvatarUrl = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 
@@ -159,6 +163,7 @@ Component({
     loadSettings() {
       const settings = getAppSettings()
       syncRuntimeSettings(this)
+      refreshSubscribeTemplateConfig()
 
       const savedUserInfo = wx.getStorageSync('settings_userInfo')
       const hasUserInfo = wx.getStorageSync('settings_hasUserInfo') || false
@@ -246,7 +251,7 @@ Component({
     // ============================================================
     // Notifications
     // ============================================================
-    onSubscriptionToggle(e: any) {
+    async onSubscriptionToggle(e: any) {
       const enabled = e.detail
       const settings = setAppSetting('subscriptionEnabled', enabled)
       const i18n = getI18n(settings.language)
@@ -255,19 +260,16 @@ Component({
       addLog('消息订阅服务', enabled ? '开启订阅服务' : '关闭订阅服务')
 
       if (enabled) {
-        if (SUBSCRIBE_TEMPLATE_IDS.length === 0) {
+        const tmplIds = getConfiguredSubscribeTemplateIds()
+        if (tmplIds.length === 0) {
           wx.showToast({ title: i18n.settings.localSubscriptionOn, icon: 'none' })
           return
         }
 
-        wx.requestSubscribeMessage({
-          tmplIds: SUBSCRIBE_TEMPLATE_IDS,
-          success: () => {
-            wx.showToast({ title: i18n.settings.subscriptionOn, icon: 'none' })
-          },
-          fail: () => {
-            wx.showToast({ title: i18n.settings.subscriptionAuthFail, icon: 'none' })
-          }
+        const authResult = await requestSubscribeAuthorization(tmplIds)
+        wx.showToast({
+          title: authResult.acceptedTemplateIds.length > 0 ? i18n.settings.subscriptionOn : i18n.settings.subscriptionAuthFail,
+          icon: 'none',
         })
       } else {
         wx.showToast({ title: i18n.settings.subscriptionOff, icon: 'none' })

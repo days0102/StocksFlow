@@ -49,9 +49,16 @@
         />
       </view>
 
+      <view class="template-warning" wx:if="{{tmplIds.length === 0}}">
+        <text>{{i18n.notification.templateMissing}}</text>
+      </view>
+
       <view class="authorize-row" wx:if="{{tmplIds.length > 0}}">
         <view class="authorize-btn" bindtap="onAuthorizeAll">
           <text>{{i18n.notification.authorizeAll}}</text>
+        </view>
+        <view class="authorize-btn secondary {{sendingTest ? 'disabled' : ''}}" bindtap="onSendTestNotification">
+          <text>{{sendingTest ? i18n.notification.sending : i18n.notification.sendTest}}</text>
         </view>
       </view>
     </van-cell-group>
